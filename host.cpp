@@ -225,7 +225,7 @@ int main(int argc, char** argv) {
 	ap_int<8> zero_point_dst = 0;
 	ap_int<8> clamp_max = 0;
 	ap_int<8> clamp_min = 0;
-    int nnz = 0;
+    int nnz = 512;
 	int row_size = 0;
         int col_size = 0;
 
