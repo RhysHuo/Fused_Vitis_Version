@@ -218,16 +218,7 @@ int main(int argc, char** argv) {
     ap_uint<2> spmm = atoi(argv[3]);
 	FILE *fp_input;
         fp_input = fopen(argv[4], "r");
-
-    DTYPE_OUT *quantized_multiplier = new DTYPE_OUT[SN];
-	DTYPE_OUT *shift = new DTYPE_OUT[SN];
-	DTYPE_OUT *bias = new DTYPE_OUT[SN];
-	for(int i = 0; i < SN; i++)
-	{
-		quantized_multiplier[i] = 0;
-		shift[i] = 0;
-		bias[i] = 0;
-	}
+	
     ap_int<32> bias_count = 0;
 	ap_int<8> zero_point_lhs = 0;
 	ap_int<8> zero_point_rhs = 0;
@@ -265,22 +256,25 @@ int main(int argc, char** argv) {
         SP = atoi(argv[7]);
     }
 
-    u32 *array_colIndices = new u32[nnz];
-	u32 *array_rowPtr = new u32[nnz];
-
     // Map our user-allocated buffers as OpenCL buffers using a shared host pointer
     OCL_CHECK(err, cl::Buffer buffer_array_a(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR , SN * SM * sizeof(DTYPE), NULL, &err));
     OCL_CHECK(err, cl::Buffer buffer_array_b(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR , SM * SP * sizeof(DTYPE), NULL, &err));    
     OCL_CHECK(err, cl::Buffer buffer_array_values(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR , SN * SM * sizeof(DTYPE), NULL, &err));
     OCL_CHECK(err, cl::Buffer buffer_array_c(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR , SN * SP * sizeof(DTYPE), NULL, &err));
+	
+	OCL_CHECK(err, cl::Buffer buffer_quantized_multiplier(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR , SN * sizeof(DTYPE_OUT), NULL, &err));
+	OCL_CHECK(err, cl::Buffer buffer_shift(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR , SN * sizeof(DTYPE_OUT), NULL, &err));
+	OCL_CHECK(err, cl::Buffer buffer_bias(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR , SN * sizeof(DTYPE_OUT), NULL, &err));
+	OCL_CHECK(err, cl::Buffer buffer_array_colIndices(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR , nnz * sizeof(int), NULL, &err));
+	OCL_CHECK(err, cl::Buffer buffer_array_rowPtr(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR , nnz * sizeof(int), NULL, &err));
 
     // Set the kernal argument
     int narg = 0;
     OCL_CHECK(err, err = krnl.setArg(narg++, S_cores));
     OCL_CHECK(err, err = krnl.setArg(narg++, spmm));
-    OCL_CHECK(err, err = krnl.setArg(narg++, quantized_multiplier));
-    OCL_CHECK(err, err = krnl.setArg(narg++, shift));
-    OCL_CHECK(err, err = krnl.setArg(narg++, bias));
+    OCL_CHECK(err, err = krnl.setArg(narg++, buffer_quantized_multiplier));
+    OCL_CHECK(err, err = krnl.setArg(narg++, buffer_shift));
+    OCL_CHECK(err, err = krnl.setArg(narg++, buffer_bias));
     OCL_CHECK(err, err = krnl.setArg(narg++, bias_count));
     OCL_CHECK(err, err = krnl.setArg(narg++, zero_point_lhs));
     OCL_CHECK(err, err = krnl.setArg(narg++, zero_point_rhs));
@@ -291,8 +285,8 @@ int main(int argc, char** argv) {
     OCL_CHECK(err, err = krnl.setArg(narg++, buffer_array_b));
     OCL_CHECK(err, err = krnl.setArg(narg++, buffer_array_c));
     OCL_CHECK(err, err = krnl.setArg(narg++, buffer_array_values));
-    OCL_CHECK(err, err = krnl.setArg(narg++, array_colIndices));
-    OCL_CHECK(err, err = krnl.setArg(narg++, array_rowPtr));
+    OCL_CHECK(err, err = krnl.setArg(narg++, buffer_array_colIndices));
+    OCL_CHECK(err, err = krnl.setArg(narg++, buffer_array_rowPtr));
     OCL_CHECK(err, err = krnl.setArg(narg++, nnz));
     OCL_CHECK(err, err = krnl.setArg(narg++, SN));
     OCL_CHECK(err, err = krnl.setArg(narg++, SM));
@@ -303,6 +297,12 @@ int main(int argc, char** argv) {
     DTYPE *array_values;
     DTYPE *array_c;
     DTYPE *array_c_golden = new DTYPE[SN * SP];
+	
+    DTYPE_OUT *quantized_multiplier;
+    DTYPE_OUT *shift;
+    DTYPE_OUT *bias;
+    int *array_colIndices;
+    int *array_rowPtr;
     
     //Map buffers to userspace pointers
     OCL_CHECK(err, array_a = (DTYPE*)q.enqueueMapBuffer(buffer_array_a, CL_TRUE, CL_MAP_WRITE, 0, SN * SM * sizeof(DTYPE), nullptr, nullptr, &err));
@@ -310,11 +310,24 @@ int main(int argc, char** argv) {
     OCL_CHECK(err, array_values = (DTYPE*)q.enqueueMapBuffer(buffer_array_values, CL_TRUE, CL_MAP_WRITE, 0, SN * SM * sizeof(DTYPE), nullptr, nullptr, &err));
 	OCL_CHECK(err, array_c = (DTYPE*)q.enqueueMapBuffer(buffer_array_c, CL_TRUE, CL_MAP_READ, 0, SN * SP * sizeof(DTYPE), nullptr, nullptr, &err));
 	
+	OCL_CHECK(err, quantized_multiplier = (DTYPE_OUT*)q.enqueueMapBuffer(buffer_quantized_multiplier, CL_TRUE, CL_MAP_WRITE, 0, SN * sizeof(DTYPE_OUT), nullptr, nullptr, &err));
+	OCL_CHECK(err, shift = (DTYPE_OUT*)q.enqueueMapBuffer(buffer_shift, CL_TRUE, CL_MAP_WRITE, 0, SN * sizeof(DTYPE_OUT), nullptr, nullptr, &err));
+	OCL_CHECK(err, bias = (DTYPE_OUT*)q.enqueueMapBuffer(buffer_bias, CL_TRUE, CL_MAP_WRITE, 0, SN * sizeof(DTYPE_OUT), nullptr, nullptr, &err));
+	OCL_CHECK(err, array_colIndices = (int*)q.enqueueMapBuffer(buffer_array_colIndices, CL_TRUE, CL_MAP_WRITE, 0, nnz * sizeof(int), nullptr, nullptr, &err));
+	OCL_CHECK(err, array_rowPtr = (int*)q.enqueueMapBuffer(buffer_array_rowPtr, CL_TRUE, CL_MAP_WRITE, 0, nnz * sizeof(int), nullptr, nullptr, &err));
+	
     //Initialization
     if(spmm)
         init_arrays_spmm(array_b, SM, SP);
     else
         init_arrays_gemm(array_b, array_c_golden, array_c);
+	
+	for(int i = 0; i < SN; i++)
+	{
+		quantized_multiplier[i] = 0;
+		shift[i] = 0;
+		bias[i] = 0;
+	}
 	
 	std::cout << "Init_arrays completed." << std::endl;
 
