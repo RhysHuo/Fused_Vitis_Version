@@ -27,6 +27,7 @@ SOFTWARE.
 */
 
 #include "kernelMatrixmult.h"
+#include <hls_stream.h>
 
 // note that  BLOCK should be less than B_WIDTH_BLOCK
 const int BLOCK=B_WIDTH_BLOCK;   //BLOCK should be less than B_WIDTH_BLOCK
