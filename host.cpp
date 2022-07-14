@@ -216,6 +216,8 @@ int main(int argc, char** argv) {
 
     int S_cores = atoi(argv[2]);
     ap_uint<2> spmm = atoi(argv[3]);
+	FILE *fp_input;
+        fp_input = fopen(argv[4], "r");
 
     ap_int<32> *quantized_multiplier = new ap_int<32>[SN];
 	ap_int<32> *shift = new ap_int<32>[SN];
@@ -227,14 +229,11 @@ int main(int argc, char** argv) {
 	ap_int<8> clamp_max = 0;
 	ap_int<8> clamp_min = 0;
     int nnz = 0;
+	int row_size = 0;
+        int col_size = 0;
 
     if(spmm) {
-
-        int row_size;
-        int col_size;
-
-        FILE *fp_input;
-        fp_input = fopen(argv[4], "r");
+	    
         if (fp_input != NULL) {
             char line_1[1000];
             if(fgets(line_1, sizeof(line_1), fp_input) != NULL){
@@ -258,7 +257,6 @@ int main(int argc, char** argv) {
         SN = atoi(argv[5]);
         SM = atoi(argv[6]);
         SP = atoi(argv[7]);
-        std::ifstream myFile(argv[4]);
     }
 
     int *array_colIndices = new int[nnz];
@@ -329,7 +327,7 @@ int main(int argc, char** argv) {
 
         if (fp_input != NULL) {
             char line_2[1000];
-            u32 line_number = 0;
+            int line_number = 0;
                 while (fgets(line_2, sizeof(line_2), fp_input) != NULL) {
                 if (line_number < nnz) {
                     sscanf(line_2, "%d %d", &c, &v);
@@ -347,8 +345,10 @@ int main(int argc, char** argv) {
             }
         }
     }
-    else
-        load_arrays_byte_gemm(array_a, myFile);
+    else {
+		std::ifstream myFile(argv[4]);
+		load_arrays_byte_gemm(array_a, myFile);
+    }
         
 	std::cout << "Load data completed." << std::endl;
 	
