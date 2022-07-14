@@ -48,7 +48,7 @@ void dsp_kernel_sw(DTYPE a_value,DTYPE b_block[B_HEIGHT][B_WIDTH_BLOCK],ap_int<3
     }
 
 	for (int j = 0; j < B_WIDTH_BLOCK; j++) {
-        #pragma HLS UNROLL
+        //#pragma HLS UNROLL
 	    #pragma HLS PIPELINE
 		for(int z = 0; z < DTYPE_LENGTH; z+=8) {
  	  		ap_int<8> A_val = a_value.range(z+7,z);
