@@ -219,9 +219,15 @@ int main(int argc, char** argv) {
 	FILE *fp_input;
         fp_input = fopen(argv[4], "r");
 
-    ap_int<32> *quantized_multiplier = new ap_int<32>[SN];
-	ap_int<32> *shift = new ap_int<32>[SN];
-	ap_int<32> *bias = new ap_int<32>[SN];
+    DTYPE_OUT *quantized_multiplier = new DTYPE_OUT[SN];
+	DTYPE_OUT *shift = new DTYPE_OUT[SN];
+	DTYPE_OUT *bias = new DTYPE_OUT[SN];
+	for(int i = 0; i < SN; i++)
+	{
+		quantized_multiplier[i] = 0;
+		shift[i] = 0;
+		bias[i] = 0;
+	}
     ap_int<32> bias_count = 0;
 	ap_int<8> zero_point_lhs = 0;
 	ap_int<8> zero_point_rhs = 0;
@@ -259,8 +265,8 @@ int main(int argc, char** argv) {
         SP = atoi(argv[7]);
     }
 
-    int *array_colIndices = new int[nnz];
-	int *array_rowPtr = new int[nnz];
+    u32 *array_colIndices = new u32[nnz];
+	u32 *array_rowPtr = new u32[nnz];
 
     // Map our user-allocated buffers as OpenCL buffers using a shared host pointer
     OCL_CHECK(err, cl::Buffer buffer_array_a(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR , SN * SM * sizeof(DTYPE), NULL, &err));
@@ -309,13 +315,6 @@ int main(int argc, char** argv) {
         init_arrays_spmm(array_b, SM, SP);
     else
         init_arrays_gemm(array_b, array_c_golden, array_c);
-    
-    for(int i = 0; i < SN; i++)
-    {
-        quantized_multiplier[i] = 0;
-        shift[i] = 0;
-        bias[i] = 0;
-    }
 	
 	std::cout << "Init_arrays completed." << std::endl;
 
