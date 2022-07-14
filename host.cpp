@@ -367,7 +367,7 @@ int main(int argc, char** argv) {
 	//double start_time, end_time, execution_time;
     
     // Date will be migrate to the kernal space
-    OCL_CHECK(err, err = q.enqueueMigrateMemObjects({buffer_array_a, buffer_array_b, buffer_array_values}, 0));
+    OCL_CHECK(err, err = q.enqueueMigrateMemObjects({buffer_array_a, buffer_array_b, buffer_array_values, buffer_quantized_multiplier, buffer_shift, buffer_bias, buffer_array_colIndices, buffer_array_rowPtr}, 0));
 	std::cout << "enqueueMigrateMemObjects_0 completed." << std::endl;
 
     // Lauch the kernal
@@ -428,6 +428,12 @@ int main(int argc, char** argv) {
     OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_array_b, array_b));
 	OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_array_values, array_values));
 	OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_array_c, array_c));
+	
+	OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_quantized_multiplier, quantized_multiplier));
+	OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_shift, shift));
+	OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_bias, bias));
+	OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_array_colIndices, array_colIndices));
+	OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_array_rowPtr, array_rowPtr));
 	q.finish();
 
 }
