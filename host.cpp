@@ -6,7 +6,7 @@
 #include "xcl2.hpp"
 #include <CL/cl.h>
 #include <CL/cl2.hpp>
-#include "kernelMatrixmult.h"
+#include "host.h"
 
 int SN, SM, SP;
 
