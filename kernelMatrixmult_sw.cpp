@@ -332,7 +332,7 @@ void mmult_wrapper_sw(ap_uint<2> mode, ap_int<32> *quantized_multiplier, ap_int<
 
 	#pragma HLS DATAFLOW	
 
-	compute_sw(mode, zero_point_lhs, zero_point_rhs, N, M, P, A, B, C_fifo, B_index, B_index_loop, tail,rowPtr, columnIndex, values);
+	compute_sw(mode, zero_point_lhs, zero_point_rhs, N, M, P, A, B, C_fifo, B_index, B_index_loop, tail, rowPtr, columnIndex, values);
 
 	scale_sw(quantized_multiplier, shift, bias, zero_point_dst, clamp_max, clamp_min, N, M, P, C_fifo, B_index, B_index_loop, tail, write_fifo);
 
@@ -391,8 +391,8 @@ void mmult_top_sw(ap_uint<2> mode, ap_int<32> *quantized_multiplier, ap_int<32> 
          //else
 	{
 
-		ap_int<32> tail = P%B_WIDTH_BLOCK;
-		ap_int<32> B_index_loop = P/B_WIDTH_BLOCK + 1;
+		ap_int<32> tail = P % B_WIDTH_BLOCK;
+		ap_int<32> B_index_loop = P / B_WIDTH_BLOCK + 1;
 	
 		for (int B_index = 0; B_index < B_index_loop; B_index++) {
 			//#pragma HLS DATAFLOW
@@ -454,6 +454,9 @@ void kernelmult1_sw(
 	int A_split = ((cores >> 3)&0x1);
 	int core_count = (cores&0x7);
 	int bias_offset = 0;
+	
+	printf("A_split = %d \n", A_split);
+	printf("core_count = %d \n", core_count);
 
 
 	//0 => B split, 1 => A split
@@ -467,7 +470,7 @@ void kernelmult1_sw(
 		P_tail2 =0;
 		P_tail3 =0;
 		P_tail4 =0;
-		bias_count = bias_count/core_count;
+		bias_count = bias_count / core_count;
 		bias_offset = N_block;
 		nnz_block1 = *(rowPtr + N_block) - *(rowPtr);
 		nnz_block2 = *(rowPtr + 2*N_block) - *(rowPtr + N_block);
@@ -479,8 +482,8 @@ void kernelmult1_sw(
 	else
 	{
 		N_block = N;
-		P_block = P/core_count;
-		P_tail = P%core_count;
+		P_block = P / core_count;
+		P_tail = P % core_count;
 		P_tail1 =0;
 		P_tail2 =0;
 		P_tail3 =0;
