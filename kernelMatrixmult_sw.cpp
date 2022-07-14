@@ -364,7 +364,7 @@ typedef unsigned long u32;
 #pragma SDS data zero_copy(A[0:N*M],B[0:M*P], C[0:N*P])
 */
 
-void mmult_top_sw(ap_uint<2> mode, ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *bias,  ap_int<32> bias_count, ap_int<8> zero_point_lhs,  ap_int<8> zero_point_rhs, ap_int<8> zero_point_dst, ap_int<8> clamp_max,ap_int<8> clamp_min,int N, int M, int P, DTYPE* A, DTYPE* B, DTYPE* C,int array_c_adjust,int *rowPtr,int *columnIndex,DTYPE *values,int nnz)
+void mmult_top_sw(ap_uint<2> mode, ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *bias,  ap_int<32> bias_count, ap_int<8> zero_point_lhs,  ap_int<8> zero_point_rhs, ap_int<8> zero_point_dst, ap_int<8> clamp_max,ap_int<8> clamp_min,int N, int M, int P, DTYPE* A, DTYPE* B, DTYPE* C,int array_c_adjust,int *rowPtr,int *columnIndex, DTYPE *values,int nnz)
 {
 	
 	 //c_fifo_stream_t       C_fifo[B_WIDTH_BLOCK];
@@ -455,15 +455,17 @@ void kernelmult1_sw(
 	int core_count = (cores&0x7);
 	int bias_offset = 0;
 	
-	printf("A_split = %d \n", A_split);
-	printf("core_count = %d \n", core_count);
+	//printf("A_split = %d \n", A_split);
+	//printf("core_count = %d \n", core_count);
 	
 	for(int i = 0; i < 100; i++){
 		printf("array_a[%d] = %d \n", i, array_a[i]);
 	}
+	/*
 	for(int i = 0; i < 50; i++){
 		printf("array_b[%d] = %d \n", i, array_b[i]);
 	}
+	*/
 
 
 	//0 => B split, 1 => A split
@@ -539,13 +541,13 @@ void kernelmult1_sw(
 	//#pragma SDS async(1)
 
 	//mmult_top_sw(mode,quantized_multiplier,shift,bias,bias_count,zero_point_lhs,zero_point_rhs, zero_point_dst,clamp_max,clamp_min,N_block, M, P_block+P_tail1, array_a_block, array_b_block, array_c_block,array_c_adjust,rowPtr_block,colIndices_block,values_block,nnz_block1);
-	mmult_top_sw(mode,quantized_multiplier,shift,bias,bias_count,zero_point_lhs,zero_point_rhs, zero_point_dst,clamp_max,clamp_min,N_block, M, P_block+P_tail1, array_a_block, array_b_block, array_c,array_c_adjust,rowPtr_block,colIndices_block,values_block,nnz_block1);
+	mmult_top_sw(mode, quantized_multiplier, shift, bias, bias_count, zero_point_lhs, zero_point_rhs, zero_point_dst, clamp_max, clamp_min, N_block, M, P_block+P_tail1, array_a_block, array_b_block, array_c, array_c_adjust, rowPtr_block, colIndices_block, values_block, nnz_block1);
 	
 	for(int i = 0; i < 50; i++)
 	{
 		printf("Core 1 C value at %d is %x\n",i,(int)*(array_c_block+i));
 	}
-	//*******************************************************************************************************************************************
+	//**************************************************************************************************************************************************************
 	if (core_count > 1)
 	{
 		if(A_split)
