@@ -458,7 +458,7 @@ void kernelmult1_sw(
 	printf("A_split = %d \n", &A_split);
 	printf("core_count = %d \n", &core_count);
 	
-	for(int i = 0; i < (SN * SM); i++){
+	for(int i = 0; i < 100; i++){
 		printf("array_a[%d] = %d \n", &i, &array_a[i]);
 	}
 	for(int i = 0; i < 50; i++){
