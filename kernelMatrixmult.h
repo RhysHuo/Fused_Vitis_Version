@@ -35,6 +35,7 @@ SOFTWARE.
 
 #include <string>
 #include <fstream>
+#include <hls_stream.h>
 
 #include "ap_int.h"
 
