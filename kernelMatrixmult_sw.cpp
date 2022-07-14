@@ -455,14 +455,14 @@ void kernelmult1_sw(
 	int core_count = (cores&0x7);
 	int bias_offset = 0;
 	
-	printf("A_split = %d \n", &A_split);
-	printf("core_count = %d \n", &core_count);
+	printf("A_split = %d \n", A_split);
+	printf("core_count = %d \n", core_count);
 	
 	for(int i = 0; i < 100; i++){
-		printf("array_a[%d] = %d \n", &i, &array_a[i]);
+		printf("array_a[%d] = %d \n", i, array_a[i]);
 	}
 	for(int i = 0; i < 50; i++){
-		printf("array_b[%d] = %d \n", &i, &array_b[i]);
+		printf("array_b[%d] = %d \n", i, array_b[i]);
 	}
 
 
