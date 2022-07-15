@@ -105,7 +105,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 				#pragma HLS PIPELINE
 				#pragma HLS loop_tripcount min=16 max=16 avg=16
 				B_accel[i][j] = B[i+j*M+B_index*B_WIDTH_BLOCK*M];
-				printf("B_accel[%d][%d] = %d \n", i, j, B_accel[i][j]);
+				//printf("B_accel[%d][%d] = %d \n", i, j, B_accel[i][j]);
 				//std::cout << i << " " << j << std::endl;
 			}
 	}
@@ -127,8 +127,8 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 					#pragma HLS PIPELINE
 					//A_accel <<  A[A_index*M*A_HEIGHT_BLOCK+j];
 					A_accel[j] =  A[A_index*M*A_HEIGHT_BLOCK+j];
-					if((A_index*M*A_HEIGHT_BLOCK+j) < 100)
-						printf("A[%d] = %d \n", A_index*M*A_HEIGHT_BLOCK+j, A[A_index*M*A_HEIGHT_BLOCK+j]);
+					//if((A_index*M*A_HEIGHT_BLOCK+j) < 100)
+						//printf("A[%d] = %d \n", A_index*M*A_HEIGHT_BLOCK+j, A[A_index*M*A_HEIGHT_BLOCK+j]);
 					//std::cout << "A is " << A_accel[i][j] << std::endl;
 				}
 			#endif
@@ -186,6 +186,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 
 					for (int j = 0; j < B_WIDTH_BLOCK; j++) {
 						#pragma HLS UNROLL
+						printf("acc[%d] = %d \n", j, acc[j]);
 						acc2[j] += acc[j];
 					}
 				} // k loop
@@ -203,7 +204,8 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 		else
 		{
 			#ifdef ENABLE_SPMM
-
+			printf("spmm : computing \n");
+			
 			DSP_LOOP_SPMM: 
 				for (int i = 0; i < rnnz; i+=1) {
 					#pragma HLS PIPELINE
@@ -237,7 +239,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *bias, ap_int<8> zero_point_dst, ap_int<8> clamp_max,ap_int<8> clamp_min,int N, int M, int P, hls::stream<DTYPE_OUT> C_fifo[C_WIDTH_BLOCK],int B_index, int B_index_loop,int tail,hls::stream<DTYPE_OUT> write_fifo[C_WIDTH_BLOCK])
 {
 
-
+			int counter = 0;
 			int B_WIDTH_INT;
 			if (B_index < (B_index_loop-1))
 				B_WIDTH_INT = B_WIDTH_BLOCK;
@@ -274,12 +276,16 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 									if (j<B_WIDTH_INT)
 									{
 										#ifdef ENABLE_SCALING
+										printf("ENABLE_SCALING \n");
 										ap_int<64> C_temp1 =  C_fifo[j].read() + bias_val[z];
+										printf("%d C_temp1 = %d \n", counter, C_temp1);
 										ap_int<32> total_shift1 = 31 - shift_val[z];
 												ap_int<64> round1 = (ap_int<64>)1 << (total_shift1 - 1);
 										C_temp1 = C_temp1*mult_val[z] + round1;
+										printf("%d C_temp1*mult_val[z] = %d \n", counter, C_temp1);
 										C_temp1 = (C_temp1 >> total_shift1) + zero_point_dst;
 										#else
+										printf("NOT ENABLE_SCALING \n");
 										ap_int<64> C_temp1 =  C_fifo[j].read()+ bias_val[z];
 										#endif
 										ap_int<8> C_temp5 = C_temp1;
@@ -287,6 +293,7 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 										if (C_temp1 > clamp_max) C_temp5 = clamp_max; 
 				
 										C_out = ((C_out >> 8) | ((int)C_temp5 << 24));
+										printf("%d C_out = %d \n", counter++, C_out);
 
 										if (z==3)
 										{
