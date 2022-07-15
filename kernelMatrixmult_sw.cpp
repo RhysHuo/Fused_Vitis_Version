@@ -105,6 +105,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 				#pragma HLS PIPELINE
 				#pragma HLS loop_tripcount min=16 max=16 avg=16
 				B_accel[i][j] = B[i+j*M+B_index*B_WIDTH_BLOCK*M];
+				printf("B_accel[%d][%d] = %d \n", i, j, B_accel[i][j]);
 				//std::cout << i << " " << j << std::endl;
 			}
 	}
@@ -120,11 +121,14 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 		{
 
 			#ifdef ENABLE_GEMM
+			printf("gemm : loading A row \n");
 			LOOP_A_ROW_GEMM : 
 				for (int j = 0; j < M; j++) {
 					#pragma HLS PIPELINE
 					//A_accel <<  A[A_index*M*A_HEIGHT_BLOCK+j];
 					A_accel[j] =  A[A_index*M*A_HEIGHT_BLOCK+j];
+					if((A_index*M*A_HEIGHT_BLOCK+j) < 100)
+						printf("A[%d] = %d \n", A_index*M*A_HEIGHT_BLOCK+j, A[A_index*M*A_HEIGHT_BLOCK+j]);
 					//std::cout << "A is " << A_accel[i][j] << std::endl;
 				}
 			#endif
@@ -134,6 +138,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 		{
 
 			#ifdef ENABLE_SPMM
+			printf("spmm : loading A row \n");
 			int current_index= rowPtr[A_index];
 			int next_index=rowPtr[A_index+1];
 			rnnz = next_index-current_index;
@@ -163,6 +168,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 		if (mode == 0) //gemm
 		{
 			#ifdef ENABLE_GEMM
+			printf("gemm : computing \n");
 
 	   		DSP_LOOP_GEMM: 
 				for(int k = 0; k < M; k+=1) {
@@ -333,10 +339,13 @@ void mmult_wrapper_sw(ap_uint<2> mode, ap_int<32> *quantized_multiplier, ap_int<
 	#pragma HLS DATAFLOW	
 
 	compute_sw(mode, zero_point_lhs, zero_point_rhs, N, M, P, A, B, C_fifo, B_index, B_index_loop, tail, rowPtr, columnIndex, values);
+	printf("compute_sw completed \n");
 
 	scale_sw(quantized_multiplier, shift, bias, zero_point_dst, clamp_max, clamp_min, N, M, P, C_fifo, B_index, B_index_loop, tail, write_fifo);
+	printf("scale_sw completed \n");
 
 	writec_sw(N, P, write_fifo, C, array_c_adjust, B_index, B_index_loop, tail);
+	printf("writec_sw completed \n");
 	
 }
 
