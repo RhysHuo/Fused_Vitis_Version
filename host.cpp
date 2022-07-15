@@ -221,10 +221,10 @@ int main(int argc, char** argv) {
 	
     ap_int<32> bias_count = 0;
 	ap_int<8> zero_point_lhs = 0;
-	ap_int<8> zero_point_rhs = 0;
-	ap_int<8> zero_point_dst = 0;
-	ap_int<8> clamp_max = 0;
-	ap_int<8> clamp_min = 0;
+	ap_int<8> zero_point_rhs = -128;
+	ap_int<8> zero_point_dst = -128;
+	ap_int<8> clamp_max = 127;
+	ap_int<8> clamp_min = -128;
     int nnz = 512;
 	int row_size = 0;
         int col_size = 0;
@@ -324,7 +324,7 @@ int main(int argc, char** argv) {
 	
 	for(int i = 0; i < SN; i++)
 	{
-		quantized_multiplier[i] = 0;
+		quantized_multiplier[i] = 1;
 		shift[i] = 0;
 		bias[i] = 0;
 	}
