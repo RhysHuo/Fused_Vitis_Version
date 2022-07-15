@@ -63,7 +63,7 @@ SOFTWARE.
 
 #define ENABLE_GEMM
 #define ENABLE_SPMM
-#define ENABLE_SCALING
+//#define ENABLE_SCALING
 #define ENABLE_TRANSPOSE
 
 
