@@ -187,8 +187,6 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 					for (int j = 0; j < B_WIDTH_BLOCK; j++) {
 						#pragma HLS UNROLL
 						acc2[j] += acc[j];
-						if(j<200)
-							printf("acc2[%d] = %d \n", j, acc2[j]);
 					}
 				} // k loop
      			for (int j = 0; j < B_WIDTH_BLOCK; j++) {
@@ -197,6 +195,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 					if (j < B_WIDTH_INT)
 					{
 						C_fifo[j] << acc2[j];
+						printf("acc2[%d] = %d \n", j, acc2[j]);
 					}
 				}
 
@@ -286,15 +285,16 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 										printf("%d C_temp1*mult_val[z] = %d \n", counter, C_temp1);
 										C_temp1 = (C_temp1 >> total_shift1) + zero_point_dst;
 										#else
-										printf("NOT ENABLE_SCALING \n");
+										//printf("NOT ENABLE_SCALING \n");
 										ap_int<64> C_temp1 =  C_fifo[j].read()+ bias_val[z];
+										//printf("%d C_temp1 = %d \n", counter, C_temp1);
 										#endif
 										ap_int<8> C_temp5 = C_temp1;
 										if (C_temp1 < clamp_min) C_temp5 = clamp_min;
 										if (C_temp1 > clamp_max) C_temp5 = clamp_max; 
 				
 										C_out = ((C_out >> 8) | ((int)C_temp5 << 24));
-										printf("%d C_out = %d \n", counter++, C_out);
+										//printf("%d C_out = %d \n", counter++, C_out);
 
 										if (z==3)
 										{
