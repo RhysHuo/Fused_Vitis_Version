@@ -195,8 +195,8 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 					if (j < B_WIDTH_INT)
 					{
 						C_fifo[j] << acc2[j];
-						if(A_index == 0)
-						printf("acc2[%d] = %d \n", j, acc2[j]);
+						//if(A_index == 0)
+						//printf("acc2[%d] = %d \n", j, acc2[j]);
 					}
 				}
 
@@ -292,8 +292,8 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 										printf("%d C_temp1 = %d \n", counter, C_temp1);
 										#endif
 										ap_int<8> C_temp5 = C_temp1;
-										//if (C_temp1 < clamp_min) C_temp5 = clamp_min;
-										//if (C_temp1 > clamp_max) C_temp5 = clamp_max; 
+										if (C_temp1 < clamp_min) C_temp5 = clamp_min;
+										if (C_temp1 > clamp_max) C_temp5 = clamp_max; 
 										if(counter < 64)
 											printf("%d (C_out >> 8) = %d \n", counter, C_out >> 8);
 				
@@ -483,7 +483,7 @@ void kernelmult1_sw(
 	//printf("A_split = %d \n", A_split);
 	//printf("core_count = %d \n", core_count);
 	
-	for(int i = 0; i < 100; i++){
+	for(int i = 0; i < 50; i++){
 		printf("array_a[%d] = %d \n", i, array_a[i]);
 	}
 	/*
