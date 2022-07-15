@@ -186,8 +186,9 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 
 					for (int j = 0; j < B_WIDTH_BLOCK; j++) {
 						#pragma HLS UNROLL
-						printf("acc[%d] = %d \n", j, acc[j]);
 						acc2[j] += acc[j];
+						if(j<200)
+							printf("acc2[%d] = %d \n", j, acc2[j]);
 					}
 				} // k loop
      			for (int j = 0; j < B_WIDTH_BLOCK; j++) {
