@@ -286,7 +286,7 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 										printf("%d C_temp1*mult_val[z] = %d \n", counter, C_temp1);
 										C_temp1 = (C_temp1 >> total_shift1) + zero_point_dst;
 										#else
-										printf("NOT ENABLE_SCALING \n");
+										//printf("NOT ENABLE_SCALING \n");
 										ap_int<64> C_temp1 =  C_fifo[j].read()+ bias_val[z];
 										if(counter < 64)
 										printf("%d C_temp1 = %d \n", counter, C_temp1);
