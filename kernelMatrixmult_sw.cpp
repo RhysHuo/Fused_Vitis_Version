@@ -121,7 +121,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 		{
 
 			#ifdef ENABLE_GEMM
-			printf("gemm : loading A row \n");
+			//printf("gemm : loading A row \n");
 			LOOP_A_ROW_GEMM : 
 				for (int j = 0; j < M; j++) {
 					#pragma HLS PIPELINE
@@ -168,7 +168,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 		if (mode == 0) //gemm
 		{
 			#ifdef ENABLE_GEMM
-			printf("gemm : computing \n");
+			//printf("gemm : computing \n");
 
 	   		DSP_LOOP_GEMM: 
 				for(int k = 0; k < M; k+=1) {
@@ -294,10 +294,12 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 										ap_int<8> C_temp5 = C_temp1;
 										//if (C_temp1 < clamp_min) C_temp5 = clamp_min;
 										//if (C_temp1 > clamp_max) C_temp5 = clamp_max; 
+										if(counter < 64)
+											printf("%d (C_out >> 8) = %d \n", counter, C_out >> 8);
 				
 										C_out = ((C_out >> 8) | ((int)C_temp5 << 24));
 										if(counter < 64){
-											printf("%d (C_out >> 8) = %d \n", counter, C_out >> 8);
+											
 											printf("%d ((int)C_temp5 << 24) = %d \n", counter, (int)C_temp5 << 24);
 											printf("%d C_out = %d \n", counter++, C_out);
 										}
