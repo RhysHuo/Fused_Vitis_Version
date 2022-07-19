@@ -362,7 +362,7 @@ void mmult_wrapper_sw(ap_uint<2> mode, ap_int<32> *quantized_multiplier, ap_int<
 	printf("scale_sw completed \n");
 
 	//writec_sw(N, P, write_fifo, C, array_c_adjust, B_index, B_index_loop, tail);
-	writec_sw(N, P, C_fifo, C, array_c_adjust, B_index, B_index_loop, tail);
+	writec_sw(N, P, write_fifo, C, array_c_adjust, B_index, B_index_loop, tail);
 	printf("writec_sw completed \n");
 	
 }
