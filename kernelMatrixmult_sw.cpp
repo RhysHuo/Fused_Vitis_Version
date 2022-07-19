@@ -317,7 +317,7 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 										{
 											//write_fifo[j] << C_out;
 											write_fifo[j] << C_temp1;
-											printf("write_fifo[%d] = %d \n", j, write_fifo[j]);
+											printf("write_fifo[%d] = %d \n", j, C_temp1);
 										}
 									}
 								}
