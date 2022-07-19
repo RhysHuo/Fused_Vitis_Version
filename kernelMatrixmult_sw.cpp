@@ -268,13 +268,15 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 					LOOP_CW1: 
 						for (int j = 0; j < B_WIDTH_BLOCK; j++) {
 							#pragma HLS PIPELINE II=4
+							/*
 							if (j<B_WIDTH_INT)
 							{
 								ap_int<64> C_temp1 =  C_fifo[j].read();
 								write_fifo[j] << C_temp1;
 							}
+							*/
 							
-							/*
+							
 							//#pragma HLS UNROLL factor=2
 							DTYPE C_out;
 							LOOP_CH3:    
@@ -318,7 +320,7 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 										}
 									}
 								}
-								*/
+								
 						}
 					}     
 }
