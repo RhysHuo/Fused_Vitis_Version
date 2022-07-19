@@ -291,22 +291,23 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 										if(counter < 64)
 										printf("%d C_temp1 = %d \n", counter, C_temp1);
 										#endif
-										ap_int<8> C_temp5 = C_temp1;
-										if (C_temp1 < clamp_min) C_temp5 = clamp_min;
-										if (C_temp1 > clamp_max) C_temp5 = clamp_max; 
-										if(counter < 64)
-											printf("%d (C_out >> 8) = %d \n", counter, C_out >> 8);
+										//ap_int<8> C_temp5 = C_temp1;
+										//if (C_temp1 < clamp_min) C_temp5 = clamp_min;
+										//if (C_temp1 > clamp_max) C_temp5 = clamp_max; 
+										//if(counter < 64)
+											//printf("%d (C_out >> 8) = %d \n", counter, C_out >> 8);
 				
-										C_out = ((C_out >> 8) | ((int)C_temp5 << 24));
-										if(counter < 64){
+										//C_out = ((C_out >> 8) | ((int)C_temp5 << 24));
+										//if(counter < 64){
 											
-											printf("%d ((int)C_temp5 << 24) = %d \n", counter, (int)C_temp5 << 24);
-											printf("%d C_out = %d \n", counter++, C_out);
-										}
+											//printf("%d ((int)C_temp5 << 24) = %d \n", counter, (int)C_temp5 << 24);
+											//printf("%d C_out = %d \n", counter++, C_out);
+										//}
 
 										if (z==3)
 										{
-											write_fifo[j] << C_out;
+											//write_fifo[j] << C_out;
+											write_fifo[j] << C_temp1;
 										}
 									}
 								}		
@@ -357,8 +358,8 @@ void mmult_wrapper_sw(ap_uint<2> mode, ap_int<32> *quantized_multiplier, ap_int<
 	compute_sw(mode, zero_point_lhs, zero_point_rhs, N, M, P, A, B, C_fifo, B_index, B_index_loop, tail, rowPtr, columnIndex, values);
 	printf("compute_sw completed \n");
 
-	//scale_sw(quantized_multiplier, shift, bias, zero_point_dst, clamp_max, clamp_min, N, M, P, C_fifo, B_index, B_index_loop, tail, write_fifo);
-	//printf("scale_sw completed \n");
+	scale_sw(quantized_multiplier, shift, bias, zero_point_dst, clamp_max, clamp_min, N, M, P, C_fifo, B_index, B_index_loop, tail, write_fifo);
+	printf("scale_sw completed \n");
 
 	//writec_sw(N, P, write_fifo, C, array_c_adjust, B_index, B_index_loop, tail);
 	writec_sw(N, P, C_fifo, C, array_c_adjust, B_index, B_index_loop, tail);
