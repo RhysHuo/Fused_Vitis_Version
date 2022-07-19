@@ -298,7 +298,7 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 										//printf("NOT ENABLE_SCALING \n");
 										ap_int<64> C_temp1 =  C_fifo[j].read()+ bias_val[z];
 										if(counter < 64)
-										printf("%d C_temp1 = %d \n", counter++, C_temp1);
+										printf("counter = %d, z = %d, C_temp1 = %d \n", counter++, z, C_temp1);
 										#endif
 										//ap_int<8> C_temp5 = C_temp1;
 										//if (C_temp1 < clamp_min) C_temp5 = clamp_min;
@@ -317,6 +317,7 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 										{
 											//write_fifo[j] << C_out;
 											write_fifo[j] << C_temp1;
+											printf("write_fifo[%d] = %d \n", j, write_fifo[j]);
 										}
 									}
 								}
