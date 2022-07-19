@@ -313,7 +313,7 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 											//printf("%d C_out = %d \n", counter++, C_out);
 										//}
 
-										if (z==3)
+										if (z==0)
 										{
 											//write_fifo[j] << C_out;
 											write_fifo[j] << C_temp1;
@@ -334,8 +334,8 @@ void writec_sw(int N,int P, hls::stream<DTYPE_OUT> write_fifo[C_WIDTH_BLOCK], DT
 		B_WIDTH_INT = tail;
 
 	LOOP_WRITE1:    
-		//for (int i = 0; i < (N>>2); i++) {
-		for (int i = 0; i < N; i++) {
+		for (int i = 0; i < (N>>2); i++) {
+		//for (int i = 0; i < N; i++) {
 			DTYPE C_out;
 			LOOP_WRITE2: 
 				for (int j = 0; j < B_WIDTH_INT; j++) {
