@@ -1,6 +1,5 @@
 #include <iostream>
 #include <sstream> // std::stringstream
-//#include <sys/time.h>
 #include <algorithm>
 
 #include "xcl2.hpp"
@@ -16,6 +15,277 @@ int SN, SM, SP;
         printf("%s:%d Error calling " #call ", error code is: %d\n", __FILE__, __LINE__, error); \
         exit(EXIT_FAILURE);                                                                      \
     }
+
+const int BLOCK=B_WIDTH_BLOCK;   //BLOCK should be less than B_WIDTH_BLOCK = 128
+const int PARALLEL_ROW = B_BLOCK_PARALLEL;
+const int A_WIDTH_FIFO =  A_WIDTH;
+
+void dsp_kernel_sw(
+	DTYPE a_value,
+	DTYPE b_block[B_HEIGHT][B_WIDTH_BLOCK],
+	ap_int<32> b_row,
+	ap_int<8> zero_point_lhs,
+	ap_int<8> zero_point_rhs,
+	DTYPE_OUT acc[B_WIDTH_BLOCK]
+)
+
+{
+	//#pragma HLS ALLOCATION instances=mul limit=64 operation
+	//#pragma HLS INLINE
+
+	//DTYPE_OUT acc[B_WIDTH_BLOCK];
+	//#pragma HLS ARRAY_PARTITION variable=acc complete
+
+	for (int j = 0; j < B_WIDTH_BLOCK; j++) {
+
+		#pragma HLS UNROLL
+		acc[j] = 0;
+    }
+
+	for (int j = 0; j < B_WIDTH_BLOCK; j++) {
+        //#pragma HLS UNROLL
+	    #pragma HLS PIPELINE
+		for(int z = 0; z < DTYPE_LENGTH; z+=8) {
+ 	  		ap_int<8> A_val = a_value.range(z+7,z);
+	  		ap_int<8> B_val = b_block[b_row][j].range(z+7,z);
+			//acc[j] += (A_val-zero_point_lhs)*(B_val-zero_point_rhs);
+			acc[j] += A_val*(B_val-zero_point_rhs);
+		}
+	} // j loop
+}
+
+void compute_sw(ap_uint<2> mode, 
+		ap_int<8> zero_point_lhs,  
+		ap_int<8> zero_point_rhs, 
+		int N, 
+		int M, 
+		int P, 
+		DTYPE* A, 
+		DTYPE* B,
+		//hls::stream<DTYPE_OUT> C_fifo[B_WIDTH_BLOCK],
+		DTYPE C_fifo[B_WIDTH_BLOCK],
+		int B_index, 
+		int B_index_loop, 
+		int tail,
+		int *rowPtr,
+		int *columnIndex,
+		DTYPE *values
+)
+//./host.exe kernelmult1.sw_emu.xclbin 1 0 gemm_weights_byte_099.csv 128 128 128
+{
+
+
+       //#pragma HLS allocation function instances=dsp_kernel limit=1
+	DTYPE B_accel[B_HEIGHT][B_WIDTH_BLOCK];
+    	#pragma HLS array_partition variable=B_accel block factor= BLOCK/2 dim=2
+
+        //hls::stream<DTYPE>       A_accel;
+        //#pragma HLS STREAM variable=A_accel depth=A_WIDTH_FIFO dim=1
+
+	DTYPE A_accel[A_WIDTH];
+        //#pragma HLS array_partition variable=A_accel cyclic factor=
+
+
+	DTYPE_OUT acc[B_WIDTH_BLOCK];
+	#pragma HLS ARRAY_PARTITION variable=acc complete
+
+
+	DTYPE_OUT acc2[B_WIDTH_BLOCK];
+	#pragma HLS ARRAY_PARTITION variable=acc2 complete
+
+
+	//hls::stream<int>             col_indices_fifo;
+	//#pragma HLS STREAM variable=col_indices_fifo depth=1024 dim=1
+
+	int col_indices[A_WIDTH];
+
+    	#pragma HLS DATAFLOW	
+
+	int B_WIDTH_INT,rnnz;
+
+	if (B_index < (B_index_loop-1))
+		B_WIDTH_INT = B_WIDTH_BLOCK;
+	else
+		B_WIDTH_INT = tail;
+
+
+	for (int j = 0; j < B_WIDTH_INT; j++) {
+		LOOP_BLOCK1 : 
+			for (int i = 0; i < M; i++) {
+				#pragma HLS loop_tripcount min=84 max=84 avg=84
+				#pragma HLS PIPELINE
+				#pragma HLS loop_tripcount min=16 max=16 avg=16
+				B_accel[i][j] = B[i+j*M+B_index*B_WIDTH_BLOCK*M];
+				//printf("B_accel[%d][%d] = %d \n", i, j, B_accel[i][j]);
+				//std::cout << i << " " << j << std::endl;
+			}
+	}
+    
+	for (int A_index = 0; A_index < N; A_index++) {
+		#pragma HLS loop_tripcount min=6 max=6 avg=6
+
+		//std::cout << "A_index is " << A_index << " out of " << N/A_HEIGHT_BLOCK << std::endl;
+
+		//load A row
+
+		if (mode == 0) //gemm load A row
+		{
+
+			#ifdef ENABLE_GEMM
+			//printf("gemm : loading A row \n");
+			LOOP_A_ROW_GEMM : 
+				for (int j = 0; j < M; j++) {
+					#pragma HLS PIPELINE
+					//A_accel <<  A[A_index*M*A_HEIGHT_BLOCK+j];
+					A_accel[j] =  A[A_index*M*A_HEIGHT_BLOCK+j];
+					//if((A_index*M*A_HEIGHT_BLOCK+j) < 100)
+						//printf("A[%d] = %d \n", A_index*M*A_HEIGHT_BLOCK+j, A[A_index*M*A_HEIGHT_BLOCK+j]);
+					//std::cout << "A is " << A_accel[i][j] << std::endl;
+				}
+			#endif
+
+		}
+		else //spmm load A row
+		{
+
+			#ifdef ENABLE_SPMM
+			printf("spmm : loading A row \n");
+			int current_index= rowPtr[A_index];
+			int next_index=rowPtr[A_index+1];
+			rnnz = next_index-current_index;
+			//LOOP_A_ROW_SPMM : for (int j = current_index; j < next_index; j++) {
+			LOOP_A_ROW_SPMM : 
+				for (int j = 0; j < rnnz; j++) {
+					#pragma HLS PIPELINE
+					//A_accel <<  values[j];
+					//col_indices_fifo << columnIndex[j];
+					A_accel[j] =  values[current_index+j];
+					col_indices[j] = columnIndex[current_index+j];
+					//A_accel[z] =  current_index+j;
+					//col_indices[z] = current_index+j;
+
+				}
+			#endif
+
+		}
+		
+		//computing
+	
+		for (int j = 0; j < B_WIDTH_BLOCK; j++) {
+			#pragma HLS UNROLL
+				acc2[j] = 0;
+		}
+
+		if (mode == 0) //gemm
+		{
+			#ifdef ENABLE_GEMM
+			//printf("gemm : computing \n");
+
+	   		DSP_LOOP_GEMM: 
+				for(int k = 0; k < M; k+=1) {
+					#pragma HLS loop_tripcount min=84 max=84 avg=84
+	        			#pragma HLS PIPELINE
+	        			#pragma HLS UNROLL factor=PARALLEL_ROW
+
+					//how many rows of B block are computed in parallel in multiplication loop
+					//for example a couple of B block rows are multiplied for A 1 row in each loop iteration
+					//it basically reduces how the loop iterations by 2 if it is 2.
+
+					//DTYPE v = A_accel.read();
+					DTYPE v = A_accel[k];
+					
+					dsp_kernel_sw(v,B_accel,k,zero_point_lhs,zero_point_rhs,acc);
+
+					for (int j = 0; j < B_WIDTH_BLOCK; j++) {
+						#pragma HLS UNROLL
+						acc2[j] += acc[j];
+					}
+				} // k loop
+     			for (int j = 0; j < B_WIDTH_BLOCK; j++) {
+				//#pragma HLS loop_tripcount min=16 max=16 avg=16
+				#pragma HLS UNROLL
+				if (j < B_WIDTH_INT)
+				{
+					C_fifo[j] = acc2[j];
+					//if(A_index == 0)
+					//printf("acc2[%d] = %d \n", j, acc2[j]);
+				}
+			}
+
+			#endif
+		} //mode spmm
+		else
+		{
+			#ifdef ENABLE_SPMM
+			printf("spmm : computing \n");
+			
+			DSP_LOOP_SPMM: 
+				for (int i = 0; i < rnnz; i+=1) {
+					#pragma HLS PIPELINE
+					#pragma HLS UNROLL factor=PARALLEL_ROW
+					//DTYPE v = A_accel.read();
+					//int   ci = col_indices_fifo.read();
+					DTYPE v = A_accel[i];
+					int   ci = col_indices[i];
+
+					dsp_kernel_sw(v,B_accel,ci,zero_point_lhs,zero_point_rhs,acc);
+
+					for (int j = 0; j < B_WIDTH_BLOCK; j++) {
+						#pragma HLS UNROLL			
+						acc2[j] += acc[j];
+					}
+				} //i loop
+
+				for (int j = 0; j < B_WIDTH_BLOCK; j++) {
+					#pragma HLS UNROLL
+					if (j < B_WIDTH_INT)
+					{
+						C_fifo[j] = acc2[j];
+					}
+				}
+
+			#endif
+		} //else
+    } // A_index loop
+}
+
+void writec_sw(
+	       int N,
+	       int P, 
+	       //hls::stream<DTYPE_OUT> write_fifo[C_WIDTH_BLOCK], 
+	       DTYPE write_fifo[C_WIDTH_BLOCK],
+	       DTYPE* C,
+	       int array_c_adjust,
+	       int B_index, 
+	       int B_index_loop,
+	       int tail
+)
+
+{
+	int B_WIDTH_INT;
+	if (B_index < (B_index_loop-1))
+		B_WIDTH_INT = B_WIDTH_BLOCK;
+	else
+		B_WIDTH_INT = tail;
+
+	LOOP_WRITE1:    
+		for (int i = 0; i < (N>>2); i++) {
+			DTYPE C_out;
+			LOOP_WRITE2: 
+				for (int j = 0; j < B_WIDTH_INT; j++) {
+					#pragma HLS PIPELINE
+					#pragma HLS loop_tripcount min=1 max=1 avg=1
+					//C_out =  write_fifo[j].read();
+					C_out =  write_fifo[j];
+					#ifdef ENABLE_TRANSPOSE
+						//C[i+(j+B_index*B_WIDTH_BLOCK)*(array_c_adjust>>2)] = C_out;
+						//printf("Wrote address %x\n", (int)(i+(j+B_index*B_WIDTH_BLOCK)*(array_c_adjust>>2))); 
+					#else
+						C[i*P+j+B_index*B_WIDTH_BLOCK] = C_out;
+					#endif
+				}	
+		}				
+}
 
 //gemm
 static void init_arrays_gemm(DTYPE *B, DTYPE *C_sw, DTYPE *C)
@@ -269,6 +539,7 @@ int main(int argc, char** argv) {
 	OCL_CHECK(err, cl::Buffer buffer_array_rowPtr(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR , nnz * sizeof(int), NULL, &err));
 
     // Set the kernal argument
+    /*
     int narg = 0;
     OCL_CHECK(err, err = krnl.setArg(narg++, S_cores));
     OCL_CHECK(err, err = krnl.setArg(narg++, spmm));
@@ -291,6 +562,7 @@ int main(int argc, char** argv) {
     OCL_CHECK(err, err = krnl.setArg(narg++, SN));
     OCL_CHECK(err, err = krnl.setArg(narg++, SM));
     OCL_CHECK(err, err = krnl.setArg(narg++, SP));
+    */
 
     DTYPE *array_a;
     DTYPE *array_b;
@@ -364,9 +636,49 @@ int main(int argc, char** argv) {
         
 	std::cout << "Load data completed." << std::endl;
 	
+	
+	//kernel execution
+	
+	ap_int<32> tail = SP % B_WIDTH_BLOCK;
+	ap_int<32> B_index_loop = SP / B_WIDTH_BLOCK + 1;
+	DTYPE C_fifo[B_WIDTH_BLOCK];
+	
+	compute_sw(
+		spmm, 
+		zero_point_lhs,  
+		zero_point_rhs, 
+		SN, 
+		SM, 
+		SP, 
+		array_a, 
+		array_b,
+		//hls::stream<DTYPE_OUT> C_fifo[B_WIDTH_BLOCK],
+		C_fifo[B_WIDTH_BLOCK],
+		0, //B_index
+		B_index_loop, 
+		tail,
+		array_rowPtr,
+		array_colIndices,
+		array_values
+	);
+	
+	writec_sw(
+	       SN,
+	       SP, 
+	       //hls::stream<DTYPE_OUT> write_fifo[C_WIDTH_BLOCK], 
+	       C_fifo[B_WIDTH_BLOCK],
+	       array_c,
+	       SN, //array_c_adjust
+	       0, //B_index
+	       B_index_loop,
+	       tail
+	);
+	
+	
 	//double start_time, end_time, execution_time;
     
     // Date will be migrate to the kernal space
+	/*
     OCL_CHECK(err, err = q.enqueueMigrateMemObjects({buffer_array_a, buffer_array_b, buffer_array_values, buffer_quantized_multiplier, buffer_shift, buffer_bias, buffer_array_colIndices, buffer_array_rowPtr}, 0));
 	std::cout << "enqueueMigrateMemObjects_0 completed." << std::endl;
 
@@ -386,16 +698,7 @@ int main(int argc, char** argv) {
     
     q.finish();
 	std::cout << "q.finish() completed." << std::endl;
-
-    /*
-	start_time = getTimestamp();
-	
-	end_time = getTimestamp();
-	execution_time = (end_time - start_time) / (1000);
-	std::cout << "FPGA " << " Total execution_time = " << execution_time << " msec" << std::endl;
-    std::cout << "Start to mmult_golden " << std::endl;
-	start_time = getTimestamp();
-    */
+	*/
 
     std::cout << "Start to mmult_golden " << std::endl;
 	if(spmm)
