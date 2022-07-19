@@ -10,7 +10,7 @@
 #include "ap_int.h"
 
 #define DTYPE_LENGTH 32
-typedef ap_uint<DTYPE_LENGTH> DTYPE;
+typedef ap_int<DTYPE_LENGTH> DTYPE;
 typedef ap_int<32> DTYPE_OUT;
 
 typedef unsigned int u32;
