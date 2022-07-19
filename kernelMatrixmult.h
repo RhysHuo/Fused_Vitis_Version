@@ -64,7 +64,7 @@ SOFTWARE.
 #define ENABLE_GEMM
 #define ENABLE_SPMM
 //#define ENABLE_SCALING
-//#define ENABLE_TRANSPOSE
+#define ENABLE_TRANSPOSE
 
 
 typedef ap_int<DTYPE_LENGTH> DTYPE;
