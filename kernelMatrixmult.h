@@ -67,7 +67,7 @@ SOFTWARE.
 #define ENABLE_TRANSPOSE
 
 
-typedef ap_int<DTYPE_LENGTH> DTYPE;
+typedef ap_uint<DTYPE_LENGTH> DTYPE;
 typedef ap_int<32> DTYPE_OUT;
 
 const static int II = 1;
