@@ -184,19 +184,20 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 					DTYPE v = A_accel[k];
 					dsp_kernel_sw(v,B_accel,k,zero_point_lhs,zero_point_rhs,acc);
 
-					for (int j = 0; j < B_WIDTH_BLOCK; j++) {
-						#pragma HLS UNROLL
-						acc2[j] += acc[j];
-					}
+					//for (int j = 0; j < B_WIDTH_BLOCK; j++) {
+					//	#pragma HLS UNROLL
+					//	acc2[j] += acc[j];
+					//}
 				} // k loop
      			for (int j = 0; j < B_WIDTH_BLOCK; j++) {
 				//#pragma HLS loop_tripcount min=16 max=16 avg=16
 	                #pragma HLS UNROLL
 					if (j < B_WIDTH_INT)
 					{
-						C_fifo[j] << acc2[j];
-						if(A_index == 1)
-						printf("acc2[%d] = %d \n", j, acc2[j]);
+						//C_fifo[j] << acc2[j];
+						C_fifo[j] << acc[j];
+						if(A_index == 0)
+						printf("acc[%d] = %d \n", j, acc[j]);
 					}
 				}
 
@@ -298,7 +299,7 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 										#else
 										//printf("NOT ENABLE_SCALING \n");
 										ap_int<64> C_temp1 =  C_fifo[j].read()+ bias_val[z];
-										if((counter > 121) && (counter < 360))
+										if((counter > 0) && (counter < 128))
 											printf("counter = %d, z = %d, C_temp1 = %d \n", counter, z, C_temp1);
 										counter += 1;
 										#endif
@@ -500,7 +501,7 @@ void kernelmult1_sw(
 	//printf("A_split = %d \n", A_split);
 	//printf("core_count = %d \n", core_count);
 	
-	for(int i = 63; i < 255; i++){
+	for(int i = 0; i < 128; i++){
 		printf("array_a[%d] = %d \n", i, array_a[i]);
 	}
 	/*
