@@ -42,11 +42,11 @@ void dsp_kernel_sw(DTYPE a_value,DTYPE b_block[B_HEIGHT][B_WIDTH_BLOCK],ap_int<3
 	//DTYPE_OUT acc[B_WIDTH_BLOCK];
 	//#pragma HLS ARRAY_PARTITION variable=acc complete
 
-	//for (int j = 0; j < B_WIDTH_BLOCK; j++) {
+	for (int j = 0; j < B_WIDTH_BLOCK; j++) {
 
-		//#pragma HLS UNROLL
-		//acc[j] = 0;
-    //}
+		#pragma HLS UNROLL
+		acc[j] = 0;
+    	}
 
 	for (int j = 0; j < B_WIDTH_BLOCK; j++) {
         //#pragma HLS UNROLL
@@ -163,8 +163,8 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 	
 		for (int j = 0; j < B_WIDTH_BLOCK; j++) {
 			#pragma HLS UNROLL
-				//acc2[j] = 0;
-			acc[j] = 0;
+			acc2[j] = 0;
+			//acc[j] = 0;
 		}
 
 		if (mode == 0) //gemm
@@ -186,20 +186,21 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 					DTYPE v = A_accel[k];
 					dsp_kernel_sw(v,B_accel,k,zero_point_lhs,zero_point_rhs,acc);
 
-					//for (int j = 0; j < B_WIDTH_BLOCK; j++) {
-					//	#pragma HLS UNROLL
-					//	acc2[j] += acc[j];
-					//}
+					for (int j = 0; j < B_WIDTH_BLOCK; j++) {
+						#pragma HLS UNROLL
+						acc2[j] += acc[j];
+					}
+					
 				} // k loop
      			for (int j = 0; j < B_WIDTH_BLOCK; j++) {
 				//#pragma HLS loop_tripcount min=16 max=16 avg=16
 	                #pragma HLS UNROLL
 					if (j < B_WIDTH_INT)
 					{
-						//C_fifo[j] << acc2[j];
-						C_fifo[j] << acc[j];
-						if(A_index < 2)
-						printf("acc[%d] = %d \n", j, acc[j]);
+						C_fifo[j] << acc2[j];
+						//C_fifo[j] << acc[j];
+						//if(A_index < 2)
+						//printf("acc[%d] = %d \n", j, acc[j]);
 					}
 				}
 
