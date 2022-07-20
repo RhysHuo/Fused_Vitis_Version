@@ -82,7 +82,8 @@ void mmult_golden_byte(DTYPE *A, DTYPE *B, DTYPE *C)
 					result+=A_val*B[k*SP+col];
 				}
 			}
-			C[row*SP+col] = result;
+			//C[row*SP+col] = result;
+			C[row+col*SN] = result;
 		}
 	}
 }
