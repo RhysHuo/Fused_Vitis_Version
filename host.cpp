@@ -130,7 +130,7 @@ static int result_check(DTYPE *y, DTYPE *y_golden, int row, int col)
 		if (y_golden[i] != y[i]) {
 			std::cout 	<< "Mismatch: data index= " << i << " golden = " << y_golden[i]
 						<< ", kernel = " << y[i] << std::endl;
-			//return 1;
+			return 1;
 		}
 	}
     std::cout 	<< "TEST PASSED !" <<  std::endl;
@@ -388,15 +388,6 @@ int main(int argc, char** argv) {
     q.finish();
 	std::cout << "q.finish() completed." << std::endl;
 
-    /*
-	start_time = getTimestamp();
-	
-	end_time = getTimestamp();
-	execution_time = (end_time - start_time) / (1000);
-	std::cout << "FPGA " << " Total execution_time = " << execution_time << " msec" << std::endl;
-    std::cout << "Start to mmult_golden " << std::endl;
-	start_time = getTimestamp();
-    */
 
     std::cout << "Start to mmult_golden " << std::endl;
 	if(spmm)
@@ -414,7 +405,7 @@ int main(int argc, char** argv) {
         mmult_golden_byte(array_a, array_b, array_c_golden);
 
 	
-   for(int k = 0; k < 128; k++)
+   for(int k = 755; k < 855; k++)
 	{
 		std::cout << k << " array_c_golden =  " << array_c_golden[k] << " array_c =  " << array_c[k] <<std::endl;	
 	}
