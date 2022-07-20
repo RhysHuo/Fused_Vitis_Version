@@ -42,11 +42,11 @@ void dsp_kernel_sw(DTYPE a_value,DTYPE b_block[B_HEIGHT][B_WIDTH_BLOCK],ap_int<3
 	//DTYPE_OUT acc[B_WIDTH_BLOCK];
 	//#pragma HLS ARRAY_PARTITION variable=acc complete
 
-	for (int j = 0; j < B_WIDTH_BLOCK; j++) {
+	//for (int j = 0; j < B_WIDTH_BLOCK; j++) {
 
-		#pragma HLS UNROLL
-		acc[j] = 0;
-    }
+		//#pragma HLS UNROLL
+		//acc[j] = 0;
+    //}
 
 	for (int j = 0; j < B_WIDTH_BLOCK; j++) {
         //#pragma HLS UNROLL
@@ -162,7 +162,8 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 	
 		for (int j = 0; j < B_WIDTH_BLOCK; j++) {
 			#pragma HLS UNROLL
-				acc2[j] = 0;
+				//acc2[j] = 0;
+			acc[j] = 0;
 		}
 
 		if (mode == 0) //gemm
