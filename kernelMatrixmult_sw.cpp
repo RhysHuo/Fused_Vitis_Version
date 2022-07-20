@@ -34,7 +34,7 @@ const int BLOCK=B_WIDTH_BLOCK;   //BLOCK should be less than B_WIDTH_BLOCK
 const int PARALLEL_ROW = B_BLOCK_PARALLEL;
 const int A_WIDTH_FIFO =  A_WIDTH;
 
-void dsp_kernel_sw(DTYPE a_value,DTYPE b_block[B_HEIGHT][B_WIDTH_BLOCK],ap_int<32> b_row,ap_int<8> zero_point_lhs,ap_int<8> zero_point_rhs,DTYPE_OUT acc[B_WIDTH_BLOCK])
+void dsp_kernel_sw(ap_uint<2> mode, DTYPE a_value,DTYPE b_block[B_HEIGHT][B_WIDTH_BLOCK],ap_int<32> b_row,ap_int<8> zero_point_lhs,ap_int<8> zero_point_rhs,DTYPE_OUT acc[B_WIDTH_BLOCK])
 {
 	//#pragma HLS ALLOCATION instances=mul limit=64 operation
 	//#pragma HLS INLINE
@@ -54,7 +54,10 @@ void dsp_kernel_sw(DTYPE a_value,DTYPE b_block[B_HEIGHT][B_WIDTH_BLOCK],ap_int<3
 		for(int z = 0; z < DTYPE_LENGTH; z+=8) {
  	  		ap_int<8> A_val = a_value.range(z+7,z);
 	  		//ap_int<8> B_val = b_block[b_row][j].range(z+7,z);
-			DTYPE B_val = b_block[b_row][j];
+			if(mode)
+				ap_int<8> B_val = b_block[b_row][j].range(z+7,z);
+			else
+				DTYPE B_val = b_block[b_row][j];
 			//acc[j] += (A_val-zero_point_lhs)*(B_val-zero_point_rhs);
 			acc[j] += A_val*(B_val-zero_point_rhs);
 		}
@@ -139,7 +142,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 		{
 
 			#ifdef ENABLE_SPMM
-			printf("spmm : loading A row \n");
+			//printf("spmm : loading A row \n");
 			int current_index= rowPtr[A_index];
 			int next_index=rowPtr[A_index+1];
 			rnnz = next_index-current_index;
@@ -184,7 +187,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 
 					//DTYPE v = A_accel.read();
 					DTYPE v = A_accel[k];
-					dsp_kernel_sw(v,B_accel,k,zero_point_lhs,zero_point_rhs,acc);
+					dsp_kernel_sw(mode, v,B_accel,k,zero_point_lhs,zero_point_rhs,acc);
 
 					for (int j = 0; j < B_WIDTH_BLOCK; j++) {
 						#pragma HLS UNROLL
@@ -209,7 +212,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 		else
 		{
 			#ifdef ENABLE_SPMM
-			printf("spmm : computing \n");
+			//printf("spmm : computing \n");
 			
 			DSP_LOOP_SPMM: 
 				for (int i = 0; i < rnnz; i+=1) {
@@ -220,7 +223,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 					DTYPE v = A_accel[i];
 					int   ci = col_indices[i];
 
-					dsp_kernel_sw(v,B_accel,ci,zero_point_lhs,zero_point_rhs,acc);
+					dsp_kernel_sw(mode, v,B_accel,ci,zero_point_lhs,zero_point_rhs,acc);
 
 					for (int j = 0; j < B_WIDTH_BLOCK; j++) {
 						#pragma HLS UNROLL			
