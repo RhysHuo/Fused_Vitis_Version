@@ -423,7 +423,7 @@ int main(int argc, char** argv) {
     //if(result_check(array_c, array_c_golden, SN, SP))
         //return 1;
 	
-	for(int k = 63; k < 129; k++)
+	for(int k = 0; k < 128; k++)
 	{
 		std::cout << k << " array_c_golden =  " << array_c_golden[k] << " array_c =  " << array_c[k] <<std::endl;	
 	}
