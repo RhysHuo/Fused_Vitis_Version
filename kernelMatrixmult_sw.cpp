@@ -218,17 +218,18 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 
 					dsp_kernel_sw(v,B_accel,ci,zero_point_lhs,zero_point_rhs,acc);
 
-					for (int j = 0; j < B_WIDTH_BLOCK; j++) {
-						#pragma HLS UNROLL			
-						acc2[j] += acc[j];
-					}
+					//for (int j = 0; j < B_WIDTH_BLOCK; j++) {
+					//	#pragma HLS UNROLL			
+					//	acc2[j] += acc[j];
+					//}
 				} //i loop
 
 				for (int j = 0; j < B_WIDTH_BLOCK; j++) {
 					#pragma HLS UNROLL
 					if (j < B_WIDTH_INT)
 					{
-						C_fifo[j] << acc2[j];
+						//C_fifo[j] << acc2[j];
+						C_fifo[j] << acc[j];
 					}
 				}
 
