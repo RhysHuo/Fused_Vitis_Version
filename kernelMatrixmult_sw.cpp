@@ -353,7 +353,8 @@ void writec_sw(int N,int P, hls::stream<DTYPE_OUT> write_fifo[C_WIDTH_BLOCK], DT
 					#pragma HLS loop_tripcount min=1 max=1 avg=1
 					C_out =  write_fifo[j].read();
 					#ifdef ENABLE_TRANSPOSE
-						C[i+(j+B_index*B_WIDTH_BLOCK)*(array_c_adjust>>2)] = C_out;
+						//C[i+(j+B_index*B_WIDTH_BLOCK)*(array_c_adjust>>2)] = C_out;
+						C[i+(j+B_index*B_WIDTH_BLOCK)*array_c_adjust] = C_out;
 						//C[i*P+j+B_index*B_WIDTH_BLOCK] = C_out;
 						//printf("Wrote address %x\n", (int)(i+(j+B_index*B_WIDTH_BLOCK)*(array_c_adjust>>2))); 
 					#else
