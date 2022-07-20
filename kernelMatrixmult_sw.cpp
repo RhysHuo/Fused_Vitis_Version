@@ -195,8 +195,8 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 					if (j < B_WIDTH_INT)
 					{
 						C_fifo[j] << acc2[j];
-						//if(A_index == 0)
-						//printf("acc2[%d] = %d \n", j, acc2[j]);
+						if(A_index == 1)
+						printf("acc2[%d] = %d \n", j, acc2[j]);
 					}
 				}
 
@@ -297,8 +297,9 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 										#else
 										//printf("NOT ENABLE_SCALING \n");
 										ap_int<64> C_temp1 =  C_fifo[j].read()+ bias_val[z];
-										if(counter < 64)
-										printf("counter = %d, z = %d, C_temp1 = %d \n", counter++, z, C_temp1);
+										if((counter > 125) && (counter < 256))
+											printf("counter = %d, z = %d, C_temp1 = %d \n", counter, z, C_temp1);
+										counter += 1;
 										#endif
 										//ap_int<8> C_temp5 = C_temp1;
 										//if (C_temp1 < clamp_min) C_temp5 = clamp_min;
@@ -498,7 +499,7 @@ void kernelmult1_sw(
 	//printf("A_split = %d \n", A_split);
 	//printf("core_count = %d \n", core_count);
 	
-	for(int i = 0; i < 50; i++){
+	for(int i = 0; i < 64; i++){
 		printf("array_a[%d] = %d \n", i, array_a[i]);
 	}
 	/*
