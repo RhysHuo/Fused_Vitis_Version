@@ -412,22 +412,18 @@ int main(int argc, char** argv) {
     else
         mmult_golden_byte(array_a, array_b, array_c_golden);
 
-    /*
-	end_time = getTimestamp();
-	execution_time = (end_time - start_time) / (1000);
-	std::cout << "CPU " << " Total execution time = " << execution_time << " msec" << std::endl;
-    */
-
-    // Compare the results of the Device to the simulation
-    std::cout << "Start to result_check " << std::endl;
-
-    //if(result_check(array_c, array_c_golden, SN, SP))
-        //return 1;
 	
-	for(int k = 0; k < 128; k++)
+   for(int k = 0; k < 128; k++)
 	{
 		std::cout << k << " array_c_golden =  " << array_c_golden[k] << " array_c =  " << array_c[k] <<std::endl;	
 	}
+	
+    // Compare the results of the Device to the simulation
+    std::cout << "Start to result_check " << std::endl;
+
+    if(result_check(array_c, array_c_golden, SN, SP))
+        return 1;
+	
 
 	OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_array_a, array_a));
     OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_array_b, array_b));
