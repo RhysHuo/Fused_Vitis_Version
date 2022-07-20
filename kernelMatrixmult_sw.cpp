@@ -127,8 +127,8 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 					#pragma HLS PIPELINE
 					//A_accel <<  A[A_index*M*A_HEIGHT_BLOCK+j];
 					A_accel[j] =  A[A_index*M*A_HEIGHT_BLOCK+j];
-					//if((A_index*M*A_HEIGHT_BLOCK+j) < 100)
-						//printf("A[%d] = %d \n", A_index*M*A_HEIGHT_BLOCK+j, A[A_index*M*A_HEIGHT_BLOCK+j]);
+					if((A_index*M*A_HEIGHT_BLOCK+j) < 128)
+						printf("A[%d] = %d \n", A_index*M*A_HEIGHT_BLOCK+j, A[A_index*M*A_HEIGHT_BLOCK+j]);
 					//std::cout << "A is " << A_accel[i][j] << std::endl;
 				}
 			#endif
@@ -197,7 +197,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 					{
 						//C_fifo[j] << acc2[j];
 						C_fifo[j] << acc[j];
-						if(A_index < 3)
+						if(A_index < 2)
 						printf("acc[%d] = %d \n", j, acc[j]);
 					}
 				}
@@ -502,9 +502,9 @@ void kernelmult1_sw(
 	//printf("A_split = %d \n", A_split);
 	//printf("core_count = %d \n", core_count);
 	
-	for(int i = 0; i < 128; i++){
-		printf("array_a[%d] = %d \n", i, array_a[i]);
-	}
+	//for(int i = 0; i < 128; i++){
+	//	printf("array_a[%d] = %d \n", i, array_a[i]);
+	//}
 	/*
 	for(int i = 0; i < 50; i++){
 		printf("array_b[%d] = %d \n", i, array_b[i]);
