@@ -108,7 +108,8 @@ void golden_spmm_byte(DTYPE *values, int *row_ptr, int *col_indices, DTYPE *x, i
 						       	y0 += values_val * x[x_up].range(x_down*8+7,x_down*8);
 				}
 			}
-			y[nvc*row_size+i] = y0;
+			//y[nvc*row_size+i] = y0;
+			y[nvc+i*no_vectors] = y0;
 		}
 	}
 }
