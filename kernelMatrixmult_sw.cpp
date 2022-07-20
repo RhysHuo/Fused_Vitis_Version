@@ -128,8 +128,8 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 					#pragma HLS PIPELINE
 					//A_accel <<  A[A_index*M*A_HEIGHT_BLOCK+j];
 					A_accel[j] =  A[A_index*M*A_HEIGHT_BLOCK+j];
-					if((A_index*M*A_HEIGHT_BLOCK+j) < 128)
-						printf("A[%d] = %d \n", A_index*M*A_HEIGHT_BLOCK+j, A[A_index*M*A_HEIGHT_BLOCK+j]);
+					//if((A_index*M*A_HEIGHT_BLOCK+j) < 128)
+					//	printf("A[%d] = %d \n", A_index*M*A_HEIGHT_BLOCK+j, A[A_index*M*A_HEIGHT_BLOCK+j]);
 					//std::cout << "A is " << A_accel[i][j] << std::endl;
 				}
 			#endif
@@ -252,7 +252,9 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 				B_WIDTH_INT = tail;
 
 			LOOP_CH1:    
-				for (int i = 0; i < N; i+=4) {
+				//for (int i = 0; i < N; i+=4) {
+				for (int i = 0; i < N; i+=1) {
+					/*
 					ap_int<32> bias_val[4];
 					ap_int<32> shift_val[4];
 					ap_int<32> mult_val[4];
@@ -268,19 +270,20 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 					mult_val[1] = quantized_multiplier[i+1];
 					mult_val[2] = quantized_multiplier[i+2];
 					mult_val[3] = quantized_multiplier[i+3];
+					*/
 					//LOOP_CW1: for (int j = 0; j < B_WIDTH_INT; j++) {
 					LOOP_CW1: 
 						for (int j = 0; j < B_WIDTH_BLOCK; j++) {
 							#pragma HLS PIPELINE II=4
-							/*
+							
 							if (j<B_WIDTH_INT)
 							{
 								ap_int<64> C_temp1 =  C_fifo[j].read();
 								write_fifo[j] << C_temp1;
 							}
-							*/
 							
 							
+							/*
 							//#pragma HLS UNROLL factor=2
 							DTYPE C_out;
 							LOOP_CH3:    
@@ -326,6 +329,7 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 										}
 									}
 								}
+								*/
 								
 						}
 					}     
@@ -588,10 +592,10 @@ void kernelmult1_sw(
 	//mmult_top_sw(mode,quantized_multiplier,shift,bias,bias_count,zero_point_lhs,zero_point_rhs, zero_point_dst,clamp_max,clamp_min,N_block, M, P_block+P_tail1, array_a_block, array_b_block, array_c_block,array_c_adjust,rowPtr_block,colIndices_block,values_block,nnz_block1);
 	mmult_top_sw(mode, quantized_multiplier, shift, bias, bias_count, zero_point_lhs, zero_point_rhs, zero_point_dst, clamp_max, clamp_min, N_block, M, P_block+P_tail1, array_a_block, array_b_block, array_c, array_c_adjust, rowPtr_block, colIndices_block, values_block, nnz_block1);
 	
-	for(int i = 0; i < 20; i++)
-	{
-		printf("Core 1 C value at %d is %x\n",i,(int)*(array_c+i));
-	}
+	//for(int i = 0; i < 20; i++)
+	//{
+	//	printf("Core 1 C value at %d is %x\n",i,(int)*(array_c+i));
+	//}
 	//**************************************************************************************************************************************************************
 	if (core_count > 1)
 	{
