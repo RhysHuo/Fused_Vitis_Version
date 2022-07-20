@@ -53,7 +53,8 @@ void dsp_kernel_sw(DTYPE a_value,DTYPE b_block[B_HEIGHT][B_WIDTH_BLOCK],ap_int<3
 	    #pragma HLS PIPELINE
 		for(int z = 0; z < DTYPE_LENGTH; z+=8) {
  	  		ap_int<8> A_val = a_value.range(z+7,z);
-	  		ap_int<8> B_val = b_block[b_row][j].range(z+7,z);
+	  		//ap_int<8> B_val = b_block[b_row][j].range(z+7,z);
+			DTYPE B_val = b_block[b_row][j];
 			//acc[j] += (A_val-zero_point_lhs)*(B_val-zero_point_rhs);
 			acc[j] += A_val*(B_val-zero_point_rhs);
 		}
