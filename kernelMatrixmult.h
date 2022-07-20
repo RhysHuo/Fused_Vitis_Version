@@ -77,6 +77,7 @@ const static int ROW_SIZE_THREAD_MAX = (1024);
 const static int COL_SIZE_MAX        = (1024);
 
 void dsp_kernel_sw(
+	ap_uint<2> mode,
 	DTYPE a_value,
 	DTYPE b_block[B_HEIGHT][B_WIDTH_BLOCK],
 	ap_int<32> b_row,
