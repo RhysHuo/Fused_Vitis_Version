@@ -197,7 +197,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 					{
 						//C_fifo[j] << acc2[j];
 						C_fifo[j] << acc[j];
-						if(A_index == 0)
+						if(A_index < 3)
 						printf("acc[%d] = %d \n", j, acc[j]);
 					}
 				}
