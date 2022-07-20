@@ -297,7 +297,7 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 										#else
 										//printf("NOT ENABLE_SCALING \n");
 										ap_int<64> C_temp1 =  C_fifo[j].read()+ bias_val[z];
-										if((counter > 125) && (counter < 256))
+										if((counter > 121) && (counter < 360))
 											printf("counter = %d, z = %d, C_temp1 = %d \n", counter, z, C_temp1);
 										counter += 1;
 										#endif
@@ -499,7 +499,7 @@ void kernelmult1_sw(
 	//printf("A_split = %d \n", A_split);
 	//printf("core_count = %d \n", core_count);
 	
-	for(int i = 0; i < 64; i++){
+	for(int i = 63; i < 255; i++){
 		printf("array_a[%d] = %d \n", i, array_a[i]);
 	}
 	/*
