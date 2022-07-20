@@ -117,8 +117,10 @@ void golden_spmm_byte(DTYPE *values, int *row_ptr, int *col_indices, DTYPE *x, i
 void init_arrays_spmm(DTYPE *x, int row, int col)
 {
     for (int i = 0; i < row; i++) {
-        for (int j = 0; j < (col>>2); j++) {
-            x[i*(col>>2)+j] = 0x01010101;
+        //for (int j = 0; j < (col>>2); j++) {
+	for (int j = 0; j < col; j++) {
+            //x[i*(col>>2)+j] = 0x01010101;
+		x[i*col+j] = 0x01010101;
         }
     }
 }
