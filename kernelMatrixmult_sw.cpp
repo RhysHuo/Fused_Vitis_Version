@@ -392,14 +392,14 @@ void mmult_wrapper_sw(ap_uint<2> mode, ap_int<32> *quantized_multiplier, ap_int<
 	#pragma HLS DATAFLOW	
 
 	compute_sw(mode, zero_point_lhs, zero_point_rhs, N, M, P, A, B, C_fifo, B_index, B_index_loop, tail, rowPtr, columnIndex, values);
-	printf("compute_sw completed \n");
+	//printf("compute_sw completed \n");
 
 	scale_sw(quantized_multiplier, shift, bias, zero_point_dst, clamp_max, clamp_min, N, M, P, C_fifo, B_index, B_index_loop, tail, write_fifo);
-	printf("scale_sw completed \n");
+	//printf("scale_sw completed \n");
 
 	//writec_sw(N, P, write_fifo, C, array_c_adjust, B_index, B_index_loop, tail);
 	writec_sw(N, P, write_fifo, C, array_c_adjust, B_index, B_index_loop, tail);
-	printf("writec_sw completed \n");
+	//printf("writec_sw completed \n");
 	
 }
 
@@ -555,8 +555,8 @@ void kernelmult1_sw(
 		nnz_block2 = *(rowPtr + 2*N_block) - *(rowPtr + N_block);
 		nnz_block3 = *(rowPtr + 3*N_block) - *(rowPtr + 2*N_block);
 		nnz_block4 = *(rowPtr + 4*N_block) - *(rowPtr + 3*N_block);
-		printf("nnz block 1 %d nnz block 2 %d\n",nnz_block1,nnz_block2);
-		printf("rowPtr 0 %x \n",*(rowPtr+0));
+		//printf("nnz block 1 %d nnz block 2 %d\n",nnz_block1,nnz_block2);
+		//printf("rowPtr 0 %x \n",*(rowPtr+0));
 	}
 	else
 	{
@@ -581,8 +581,8 @@ void kernelmult1_sw(
 	colIndices_block = colIndices;
 	values_block = values;
 
-	printf("core 1 array a %x array b %x array c %x\n", (int*)array_a_block,(int*)array_b_block,(int*)array_c_block);
-	printf("core 1 rowPtr_block  %x nnz done %d colIndices_block %x values_block %x \n",rowPtr_block,nnz_done,colIndices_block,values_block);
+	//printf("core 1 array a %x array b %x array c %x\n", (int*)array_a_block,(int*)array_b_block,(int*)array_c_block);
+	//printf("core 1 rowPtr_block  %x nnz done %d colIndices_block %x values_block %x \n",rowPtr_block,nnz_done,colIndices_block,values_block);
 
 	//#pragma SDS resource(1)
 	//#pragma SDS async(1)
@@ -631,8 +631,8 @@ void kernelmult1_sw(
 			colIndices_block = colIndices;
 			values_block = values;
 
-			printf("core 2 array a %x array b %x array c %x\n", (int*)array_a_block,(int*)array_b_block,(int*)array_c_block);
-			printf("core 2 rowPtr_block  %x nnz done %d colIndices_block %x values_block %x \n",rowPtr_block,nnz_done,colIndices_block,values_block);
+			//printf("core 2 array a %x array b %x array c %x\n", (int*)array_a_block,(int*)array_b_block,(int*)array_c_block);
+			//printf("core 2 rowPtr_block  %x nnz done %d colIndices_block %x values_block %x \n",rowPtr_block,nnz_done,colIndices_block,values_block);
 
 		}
 		else
@@ -648,10 +648,10 @@ void kernelmult1_sw(
 
 		mmult_top_sw(mode,quantized_multiplier+bias_offset,shift+bias_offset,bias+bias_offset,bias_count,zero_point_lhs,zero_point_rhs, zero_point_dst,clamp_max,clamp_min,N_block, M, P_block+P_tail2, array_a_block, array_b_block, array_c_block,array_c_adjust,rowPtr_block,colIndices_block,values_block,nnz_block2);
 			
-		for(int i=0;i<256;i++)
-		{
-			printf("Core 2 C value at %d is %x\n",i,(int)*(array_c+i));
-		}
+		//for(int i=0;i<256;i++)
+		//{
+			//printf("Core 2 C value at %d is %x\n",i,(int)*(array_c+i));
+		//}
 
 		if (core_count > 2)
 		{
