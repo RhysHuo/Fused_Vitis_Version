@@ -1,7 +1,7 @@
 #include <iostream>
 #include <sstream> // std::stringstream
 #include <algorithm>
-
+#include <chrono>
 #include "xcl2.hpp"
 #include <CL/cl.h>
 #include <CL/cl2.hpp>
@@ -320,6 +320,8 @@ int main(int argc, char** argv) {
 	OCL_CHECK(err, array_rowPtr = (int*)q.enqueueMapBuffer(buffer_array_rowPtr, CL_TRUE, CL_MAP_WRITE, 0, nnz * sizeof(int), nullptr, nullptr, &err));
 	
     //Initialization
+    std::cout << "Start to init_array " << std::endl;
+    
     if(spmm)
         init_arrays_spmm(array_b, SM, SP);
     else
@@ -332,7 +334,7 @@ int main(int argc, char** argv) {
 		bias[i] = 0;
 	}
 	
-	std::cout << "Init_arrays completed." << std::endl;
+	std::cout << "init_arrays completed." << std::endl;
 
 	// load arrays
     if(spmm){
@@ -367,9 +369,10 @@ int main(int argc, char** argv) {
         
 	std::cout << "Load data completed." << std::endl;
 	
-	//double start_time, end_time, execution_time;
     
     // Date will be migrate to the kernal space
+    auto fpga_begin = std::chrono::high_resolution_clock::now();
+    
     OCL_CHECK(err, err = q.enqueueMigrateMemObjects({buffer_array_a, buffer_array_b, buffer_array_values, buffer_quantized_multiplier, buffer_shift, buffer_bias, buffer_array_colIndices, buffer_array_rowPtr}, 0));
 	std::cout << "enqueueMigrateMemObjects_0 completed." << std::endl;
 
@@ -388,10 +391,14 @@ int main(int argc, char** argv) {
 	std::cout << "enqueueMigrateMemObjects_CL_MIGRATE_MEM_OBJECT_HOST completed." << std::endl;
     
     q.finish();
-	std::cout << "q.finish() completed." << std::endl;
+    
+	auto fpga_end = std::chrono::high_resolution_clock::now();
+	std::cout << "Complete : Kernel execution." << std::endl;
 
 
-    std::cout << "Start to mmult_golden " << std::endl;
+    std::cout << "Start : mmult_golden." << std::endl;
+    auto cpu_begin = std::chrono::high_resolution_clock::now();
+    
 	if(spmm)
         golden_spmm_byte(
             array_values,
@@ -406,17 +413,32 @@ int main(int argc, char** argv) {
     else
         mmult_golden_byte(array_a, array_b, array_c_golden);
 
-	
-   for(int k = 755; k < 855; k++)
-	{
-		std::cout << k << " array_c_golden =  " << array_c_golden[k] << " array_c =  " << array_c[k] <<std::endl;	
-	}
+	auto cpu_end = std::chrono::high_resolution_clock::now();
+	std::cout << "Complete : mmult_golden." << std::endl;
+  
 	
     // Compare the results of the Device to the simulation
-    std::cout << "Start to result_check " << std::endl;
+    std::cout << "Start : result_check." << std::endl;
 
     if(result_check(array_c, array_c_golden, SN, SP))
         return 1;
+	
+	std::chrono::duration<double> fpga_duration = fpga_end - fpga_begin;
+	std::chrono::duration<double> cpu_duration = cpu_end - cpu_begin;
+	//float fpga_throughput = (double) numRuns*3*nbytes / fpga_duration.count() / (1024.0*1024.0);
+     	//float cpu_throughput  = (double) numRuns*3*nbytes / cpu_duration.count() / (1024.0*1024.0);
+	
+	std::cout << std::endl;
+	std::cout << "----------------------------------------------------------------------------"   << std::endl;
+	std::cout << "         Performance  " << std::endl;
+    	//std::cout << "          Total data: " << total << " MBits" << std::endl;
+    	std::cout << "           FPGA Time: " << fpga_duration.count() * 1000.0 << " ms" << std::endl;
+    	//std::cout << "     FPGA Throughput: " << total / fpga_duration.count() << " MBits/s" << std::endl;
+    	//std::cout << "FPGA PCIe Throughput: " << (2*total) / fpga_duration.count() << " MBits/s" << std::endl;
+	std::cout << "            CPU Time: " << cpu_duration.count() * 1000.0 << " ms" << std::endl;
+	std::cout << "       FPGA Speedup : " << cpu_duration.count() / fpga_duration.count() << " x" << std::endl;
+	std::cout << "----------------------------------------------------------------------------"   << std::endl;
+	
 	
 
 	OCL_CHECK(err, err = q.enqueueUnmapMemObject(buffer_array_a, array_a));
