@@ -347,9 +347,9 @@ int main(int argc, char** argv) {
                 if (line_number < nnz) {
                     sscanf(line_2, "%d %d", &c, &v);
                     array_colIndices[line_number] = c;
-                    std::cout << "array_colIndices = " << array_colIndices[line_number] << std::endl;
+                    //std::cout << "array_colIndices = " << array_colIndices[line_number] << std::endl;
                     array_values[line_number] = v;
-                    std::cout << "array_values = " << array_values[line_number] << std::endl;
+                    //std::cout << "array_values = " << array_values[line_number] << std::endl;
                 }
                 else {
                     sscanf(line_2, "%d", &r);
