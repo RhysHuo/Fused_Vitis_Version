@@ -89,9 +89,9 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 	
 	#pragma HLS INTERFACE m_axi port=A offset=slave bundle=gmem0
 	#pragma HLS INTERFACE m_axi port=B offset=slave bundle=gmem1
-	#pragma HLS INTERFACE m_axi port=rowPtr offset=slave bundle=gmem1
-	#pragma HLS INTERFACE m_axi port=values offset=slave bundle=gmem1
-	#pragma HLS INTERFACE m_axi port=columnIndex offset=slave bundle=gmem1
+	#pragma HLS INTERFACE m_axi port=rowPtr offset=slave bundle=gmem2
+	#pragma HLS INTERFACE m_axi port=values offset=slave bundle=gmem3
+	#pragma HLS INTERFACE m_axi port=columnIndex offset=slave bundle=gmem4
 	
 
 
