@@ -629,7 +629,8 @@ void kernelmult1_sw(
 		{
 			array_a_block = (DTYPE*)(array_a);
 			array_b_block = (DTYPE*)(array_b+P_block*M);
-			array_c_block = (DTYPE*)(array_c+P_block*N/4);
+			//array_c_block = (DTYPE*)(array_c+P_block*N/4);
+			array_c_block = (DTYPE*)(array_c+P_block*N);
 		}
 
 		//#pragma SDS resource(2)
@@ -660,7 +661,8 @@ void kernelmult1_sw(
 			{
 				array_a_block = (DTYPE*)(array_a);
 				array_b_block = (DTYPE*)(array_b+2*P_block*M);
-				array_c_block = (DTYPE*)(array_c+2*P_block*N/4);
+				//array_c_block = (DTYPE*)(array_c+2*P_block*N/4);
+				array_c_block = (DTYPE*)(array_c+2*P_block*N);
 			}
 
 			//#pragma SDS resource(3)
@@ -685,7 +687,8 @@ void kernelmult1_sw(
 				{
 					array_a_block = (DTYPE*)(array_a);
 					array_b_block = (DTYPE*)(array_b+3*P_block*M);
-					array_c_block = (DTYPE*)(array_c+3*P_block*N/4);
+					//array_c_block = (DTYPE*)(array_c+3*P_block*N/4);
+					array_c_block = (DTYPE*)(array_c+3*P_block*N);
 				}
 
 				//#pragma SDS resource(4)
