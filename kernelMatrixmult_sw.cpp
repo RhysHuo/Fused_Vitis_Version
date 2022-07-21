@@ -97,7 +97,8 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 
 	//hls::stream<int>             col_indices_fifo;
 	//#pragma HLS STREAM variable=col_indices_fifo depth=1024 dim=1
-
+	int *local_rowPtr = rowPtr;
+	
 	int col_indices[A_WIDTH];
 
     #pragma HLS DATAFLOW	
@@ -149,8 +150,8 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 
 			#ifdef ENABLE_SPMM
 			//printf("spmm : loading A row \n");
-			int current_index= rowPtr[A_index];
-			int next_index=rowPtr[A_index+1];
+			int current_index= local_rowPtr[A_index];
+			int next_index=local_rowPtr[A_index+1];
 			rnnz = next_index-current_index;
 			//printf("A_index = %d,  rnnz = %d  ", A_index, rnnz);
 			//LOOP_A_ROW_SPMM : for (int j = current_index; j < next_index; j++) {
