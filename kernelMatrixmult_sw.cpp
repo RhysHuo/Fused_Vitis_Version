@@ -110,7 +110,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 				#pragma HLS PIPELINE
 				#pragma HLS loop_tripcount min=16 max=16 avg=16
 				B_accel[i][j] = B[i+j*M+B_index*B_WIDTH_BLOCK*M];
-				printf("B_accel[%d][%d] = %d \n", i, j, B_accel[i][j]);
+				//printf("B_accel[%d][%d] = %d \n", i, j, B_accel[i][j]);
 			}
 	}
     
@@ -145,7 +145,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 			int current_index= rowPtr[A_index];
 			int next_index=rowPtr[A_index+1];
 			rnnz = next_index-current_index;
-			printf("A_index = %d,  rnnz = %d  ", A_index, rnnz);
+			//printf("A_index = %d,  rnnz = %d  ", A_index, rnnz);
 			//LOOP_A_ROW_SPMM : for (int j = current_index; j < next_index; j++) {
 			LOOP_A_ROW_SPMM : 
 				for (int j = 0; j < rnnz; j++) {
@@ -154,8 +154,8 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 					//col_indices_fifo << columnIndex[j];
 					A_accel[j] =  values[current_index+j];
 					col_indices[j] = columnIndex[current_index+j];
-					if((current_index+j) < 128)
-						printf("%d,  A_accel[%d] = %d ", current_index+j, j, A_accel[j]);
+					//if((current_index+j) < 128)
+						//printf("%d,  A_accel[%d] = %d \n", current_index+j, j, A_accel[j]);
 					//A_accel[z] =  current_index+j;
 					//col_indices[z] = current_index+j;
 
@@ -226,7 +226,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 					int   ci = col_indices[i];
 
 					dsp_kernel_sw(mode, v,B_accel,ci,zero_point_lhs,zero_point_rhs,acc);
-					printf("check point 01");
+					//printf("check point 01");
 
 					for (int j = 0; j < B_WIDTH_BLOCK; j++) {
 						#pragma HLS UNROLL			
@@ -239,7 +239,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 					if (j < B_WIDTH_INT)
 					{
 						C_fifo[j] << acc2[j];
-						printf("check point 02");
+						//printf("check point 02");
 						//C_fifo[j] << acc[j];
 					}
 				}
@@ -288,7 +288,7 @@ void scale_sw(ap_int<32> *quantized_multiplier, ap_int<32> *shift, ap_int<32> *b
 							{
 								ap_int<64> C_temp1 =  C_fifo[j].read();
 								write_fifo[j] << C_temp1;
-								printf("check point 03");
+								//printf("check point 03");
 							}
 							
 							
@@ -364,7 +364,7 @@ void writec_sw(int N,int P, hls::stream<DTYPE_OUT> write_fifo[C_WIDTH_BLOCK], DT
 					#ifdef ENABLE_TRANSPOSE
 						//C[i+(j+B_index*B_WIDTH_BLOCK)*(array_c_adjust>>2)] = C_out;
 						C[i+(j+B_index*B_WIDTH_BLOCK)*array_c_adjust] = C_out;
-					printf("check point 04");
+					//printf("check point 04");
 						//C[i*P+j+B_index*B_WIDTH_BLOCK] = C_out;
 						//printf("Wrote address %x\n", (int)(i+(j+B_index*B_WIDTH_BLOCK)*(array_c_adjust>>2))); 
 					#else
