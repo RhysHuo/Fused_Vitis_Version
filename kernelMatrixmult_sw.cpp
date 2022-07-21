@@ -86,6 +86,13 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 
 	DTYPE_OUT acc2[B_WIDTH_BLOCK];
 	#pragma HLS ARRAY_PARTITION variable=acc2 complete
+	
+	#pragma HLS INTERFACE m_axi port=A offset=slave bundle=gmem0
+	#pragma HLS INTERFACE m_axi port=B offset=slave bundle=gmem1
+	#pragma HLS INTERFACE m_axi port=rowPtr offset=slave bundle=gmem1
+	#pragma HLS INTERFACE m_axi port=values offset=slave bundle=gmem1
+	#pragma HLS INTERFACE m_axi port=columnIndex offset=slave bundle=gmem1
+	
 
 
 	//hls::stream<int>             col_indices_fifo;
