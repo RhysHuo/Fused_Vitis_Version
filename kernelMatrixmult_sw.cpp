@@ -600,8 +600,8 @@ void kernelmult1_sw(
 	//#pragma SDS resource(1)
 	//#pragma SDS async(1)
 
-	//mmult_top_sw(mode,quantized_multiplier,shift,bias,bias_count,zero_point_lhs,zero_point_rhs, zero_point_dst,clamp_max,clamp_min,N_block, M, P_block+P_tail1, array_a_block, array_b_block, array_c_block,array_c_adjust,rowPtr_block,colIndices_block,values_block,nnz_block1);
-	mmult_top_sw(mode, quantized_multiplier, shift, bias, bias_count, zero_point_lhs, zero_point_rhs, zero_point_dst, clamp_max, clamp_min, N_block, M, P_block+P_tail1, array_a_block, array_b_block, array_c, array_c_adjust, rowPtr_block, colIndices_block, values_block, nnz_block1);
+	mmult_top_sw(mode,quantized_multiplier,shift,bias,bias_count,zero_point_lhs,zero_point_rhs, zero_point_dst,clamp_max,clamp_min,N_block, M, P_block+P_tail1, array_a_block, array_b_block, array_c_block,array_c_adjust,rowPtr_block,colIndices_block,values_block,nnz_block1);
+	//mmult_top_sw(mode, quantized_multiplier, shift, bias, bias_count, zero_point_lhs, zero_point_rhs, zero_point_dst, clamp_max, clamp_min, N_block, M, P_block+P_tail1, array_a_block, array_b_block, array_c, array_c_adjust, rowPtr_block, colIndices_block, values_block, nnz_block1);
 	
 	//for(int i = 0; i < 20; i++)
 	//{
