@@ -86,14 +86,6 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 
 	DTYPE_OUT acc2[B_WIDTH_BLOCK];
 	#pragma HLS ARRAY_PARTITION variable=acc2 complete
-	
-	#pragma HLS INTERFACE m_axi port=A offset=slave bundle=gmem0
-	#pragma HLS INTERFACE m_axi port=B offset=slave bundle=gmem1
-	#pragma HLS INTERFACE m_axi port=rowPtr offset=slave bundle=gmem2
-	#pragma HLS INTERFACE m_axi port=values offset=slave bundle=gmem3
-	#pragma HLS INTERFACE m_axi port=columnIndex offset=slave bundle=gmem4
-	
-
 
 	//hls::stream<int>             col_indices_fifo;
 	//#pragma HLS STREAM variable=col_indices_fifo depth=1024 dim=1
@@ -161,12 +153,15 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 					//A_accel <<  values[j];
 					//col_indices_fifo << columnIndex[j];
 					A_accel[j] =  values[current_index+j];
-					col_indices[j] = columnIndex[current_index+j];
+					//col_indices[j] = columnIndex[current_index+j];
 					//if((current_index+j) < 128)
 						//printf("%d,  A_accel[%d] = %d \n", current_index+j, j, A_accel[j]);
 					//A_accel[z] =  current_index+j;
 					//col_indices[z] = current_index+j;
-
+				}
+				for (int k = 0; k < rnnz; k++) {
+					#pragma HLS PIPELINE
+					col_indices[k] = columnIndex[current_index+k];
 				}
 			#endif
 
@@ -393,7 +388,7 @@ void mmult_wrapper_sw(ap_uint<2> mode, ap_int<32> *quantized_multiplier, ap_int<
 
 	hls::stream<DTYPE_OUT>       write_fifo[C_WIDTH_BLOCK];
 	#pragma HLS STREAM variable=write_fifo depth=8 dim=1
-
+	
 	#pragma HLS DATAFLOW	
 
 	compute_sw(mode, zero_point_lhs, zero_point_rhs, N, M, P, A, B, C_fifo, B_index, B_index_loop, tail, rowPtr, columnIndex, values);
@@ -495,6 +490,13 @@ void kernelmult1_sw(
 	int P  //gemm : set in the argv
 )
 {
+	
+	#pragma HLS INTERFACE m_axi port=array_a offset=slave bundle=gmem0
+	#pragma HLS INTERFACE m_axi port=array_b offset=slave bundle=gmem1
+	#pragma HLS INTERFACE m_axi port=array_c offset=slave bundle=gmem2
+	#pragma HLS INTERFACE m_axi port=values offset=slave bundle=gmem3
+	#pragma HLS INTERFACE m_axi port=colIndices offset=slave bundle=gmem4
+	#pragma HLS INTERFACE m_axi port=rowPtr offset=slave bundle=gmem4
 
 	DTYPE *array_a_block;
 	DTYPE *array_b_block;
