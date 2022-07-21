@@ -110,8 +110,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 				#pragma HLS PIPELINE
 				#pragma HLS loop_tripcount min=16 max=16 avg=16
 				B_accel[i][j] = B[i+j*M+B_index*B_WIDTH_BLOCK*M];
-				//printf("B_accel[%d][%d] = %d \n", i, j, B_accel[i][j]);
-				//std::cout << i << " " << j << std::endl;
+				printf("B_accel[%d][%d] = %d \n", i, j, B_accel[i][j]);
 			}
 	}
     
@@ -133,8 +132,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 					//A_accel <<  A[A_index*M*A_HEIGHT_BLOCK+j];
 					A_accel[j] =  A[A_index*M*A_HEIGHT_BLOCK+j];
 					//if((A_index*M*A_HEIGHT_BLOCK+j) < 128)
-					//	printf("A[%d] = %d \n", A_index*M*A_HEIGHT_BLOCK+j, A[A_index*M*A_HEIGHT_BLOCK+j]);
-					//std::cout << "A is " << A_accel[i][j] << std::endl;
+						//printf("A[%d] = %d \n", A_index*M*A_HEIGHT_BLOCK+j, A[A_index*M*A_HEIGHT_BLOCK+j]);
 				}
 			#endif
 
@@ -147,6 +145,7 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 			int current_index= rowPtr[A_index];
 			int next_index=rowPtr[A_index+1];
 			rnnz = next_index-current_index;
+			printf("A_index = %d,  rnnz = %d  ", A_index, rnnz);
 			//LOOP_A_ROW_SPMM : for (int j = current_index; j < next_index; j++) {
 			LOOP_A_ROW_SPMM : 
 				for (int j = 0; j < rnnz; j++) {
@@ -155,6 +154,8 @@ void compute_sw(ap_uint<2> mode, ap_int<8> zero_point_lhs,  ap_int<8> zero_point
 					//col_indices_fifo << columnIndex[j];
 					A_accel[j] =  values[current_index+j];
 					col_indices[j] = columnIndex[current_index+j];
+					if((current_index+j) < 128)
+						printf("%d,  A_accel[%d] = %d ", current_index+j, j, A_accel[j]);
 					//A_accel[z] =  current_index+j;
 					//col_indices[z] = current_index+j;
 
