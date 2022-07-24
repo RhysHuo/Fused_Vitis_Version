@@ -310,14 +310,14 @@ int main(int argc, char** argv) {
     //Map buffers to userspace pointers
     OCL_CHECK(err, array_a = (DTYPE*)q.enqueueMapBuffer(buffer_array_a, CL_TRUE, CL_MAP_WRITE, 0, SN * SM * sizeof(DTYPE), nullptr, nullptr, &err));
     OCL_CHECK(err, array_b = (DTYPE*)q.enqueueMapBuffer(buffer_array_b, CL_TRUE, CL_MAP_WRITE, 0, SM * SP * sizeof(DTYPE), nullptr, nullptr, &err));
-    OCL_CHECK(err, array_values = (DTYPE*)q.enqueueMapBuffer(buffer_array_values, CL_TRUE, CL_MAP_WRITE, 0, SN * SM * sizeof(DTYPE), nullptr, nullptr, &err));
+    OCL_CHECK(err, array_values = (DTYPE*)q.enqueueMapBuffer(buffer_array_values, CL_TRUE, CL_MAP_WRITE, 0, nnz * sizeof(DTYPE), nullptr, nullptr, &err));
 	OCL_CHECK(err, array_c = (DTYPE*)q.enqueueMapBuffer(buffer_array_c, CL_TRUE, CL_MAP_READ, 0, SN * SP * sizeof(DTYPE), nullptr, nullptr, &err));
 	
 	OCL_CHECK(err, quantized_multiplier = (DTYPE_OUT*)q.enqueueMapBuffer(buffer_quantized_multiplier, CL_TRUE, CL_MAP_WRITE, 0, SN * sizeof(DTYPE_OUT), nullptr, nullptr, &err));
 	OCL_CHECK(err, shift = (DTYPE_OUT*)q.enqueueMapBuffer(buffer_shift, CL_TRUE, CL_MAP_WRITE, 0, SN * sizeof(DTYPE_OUT), nullptr, nullptr, &err));
 	OCL_CHECK(err, bias = (DTYPE_OUT*)q.enqueueMapBuffer(buffer_bias, CL_TRUE, CL_MAP_WRITE, 0, SN * sizeof(DTYPE_OUT), nullptr, nullptr, &err));
 	OCL_CHECK(err, array_colIndices = (int*)q.enqueueMapBuffer(buffer_array_colIndices, CL_TRUE, CL_MAP_WRITE, 0, nnz * sizeof(int), nullptr, nullptr, &err));
-	OCL_CHECK(err, array_rowPtr = (int*)q.enqueueMapBuffer(buffer_array_rowPtr, CL_TRUE, CL_MAP_WRITE, 0, nnz * sizeof(int), nullptr, nullptr, &err));
+	OCL_CHECK(err, array_rowPtr = (int*)q.enqueueMapBuffer(buffer_array_rowPtr, CL_TRUE, CL_MAP_WRITE, 0, (SN + 1) * sizeof(int), nullptr, nullptr, &err));
 	
     //Initialization
     std::cout << "Start to init_array " << std::endl;
@@ -356,7 +356,7 @@ int main(int argc, char** argv) {
                 else {
                     sscanf(line_2, "%d", &r);
                     array_rowPtr[line_number - nnz] = r;
-                    std::cout << "array_rowPtr = " << array_rowPtr[line_number - nnz] << std::endl;
+                    //std::cout << "array_rowPtr = " << array_rowPtr[line_number - nnz] << std::endl;
                 }
                 line_number++;
             }
@@ -374,11 +374,11 @@ int main(int argc, char** argv) {
     auto fpga_begin = std::chrono::high_resolution_clock::now();
     
     OCL_CHECK(err, err = q.enqueueMigrateMemObjects({buffer_array_a, buffer_array_b, buffer_array_values, buffer_quantized_multiplier, buffer_shift, buffer_bias, buffer_array_colIndices, buffer_array_rowPtr}, 0));
-	std::cout << "enqueueMigrateMemObjects_0 completed." << std::endl;
+	//std::cout << "enqueueMigrateMemObjects_0 completed." << std::endl;
 
     // Lauch the kernal
     OCL_CHECK(err, err = q.enqueueTask(krnl));
-	std::cout << "enqueueTask completed." << std::endl;
+	//std::cout << "enqueueTask completed." << std::endl;
     
     // To view the results, this call will transfer the data from FPGA to the host
 
@@ -388,7 +388,7 @@ int main(int argc, char** argv) {
 	// migrating the buffer back to the host for us. This is a coding style choice you must make.
 
     OCL_CHECK(err, err = q.enqueueMigrateMemObjects({buffer_array_c}, CL_MIGRATE_MEM_OBJECT_HOST));
-	std::cout << "enqueueMigrateMemObjects_CL_MIGRATE_MEM_OBJECT_HOST completed." << std::endl;
+	//std::cout << "enqueueMigrateMemObjects_CL_MIGRATE_MEM_OBJECT_HOST completed." << std::endl;
     
     q.finish();
     
