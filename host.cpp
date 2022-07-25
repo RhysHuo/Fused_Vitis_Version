@@ -99,7 +99,8 @@ void golden_spmm_byte(DTYPE *values, int *row_ptr, int *col_indices, DTYPE *x, i
 		for (i = rowStart; i < rowEnd; ++i) {
 			y0 = 0;
 			for (j = row_ptr[i]; j < row_ptr[i + 1]; ++j) {
-				for(int z = 0; z < DTYPE_LENGTH; z+=8) {
+				//for(int z = 0; z < DTYPE_LENGTH; z+=8) {
+				for(int z = 0; z < 8; z+=8) {
 				    	DTYPE values_val1 = values[j];
 					ap_int<8> values_val = values_val1.range(z+7,z);
 					int x_value = nvc*col_size+col_indices[j];
