@@ -100,12 +100,12 @@ void golden_spmm_byte(DTYPE *values, int *row_ptr, int *col_indices, DTYPE *x, i
 			y0 = 0;
 			for (j = row_ptr[i]; j < row_ptr[i + 1]; ++j) {
 				for(int z = 0; z < DTYPE_LENGTH; z+=8) {
-					            DTYPE values_val1 = values[j];
-								ap_int<8> values_val = values_val1.range(z+7,z);
-								int x_value = nvc*col_size+col_indices[j];
-								int x_up = x_value >> 2;
-								int x_down = (x_value & 0x3);
-						       	y0 += values_val * x[x_up].range(x_down*8+7,x_down*8);
+				    	DTYPE values_val1 = values[j];
+					ap_int<8> values_val = values_val1.range(z+7,z);
+					int x_value = nvc*col_size+col_indices[j];
+					int x_up = x_value >> 2;
+					int x_down = (x_value & 0x3);
+					y0 += values_val * x[x_up].range(x_down*8+7,x_down*8);
 				}
 			}
 			y[nvc*row_size+i] = y0;
