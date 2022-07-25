@@ -9,7 +9,7 @@
 #include <fstream>
 #include "ap_int.h"
 
-#define DTYPE_LENGTH 32
+#define DTYPE_LENGTH 8
 typedef ap_int<DTYPE_LENGTH> DTYPE;
 typedef ap_int<32> DTYPE_OUT;
 
